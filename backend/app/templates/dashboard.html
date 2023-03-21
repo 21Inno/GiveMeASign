@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <style>
+    /* Style for the table */
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      /* Style for table cells */
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+      }
+  </style>
+</head>
+<body>
+<h3>Mon historique</h3>
+<br>
+<table>
+  <thead>
+    <tr>
+      <th>Gloss</th>
+      <th>Mots-Clés</th>
+      <th>Signe</th>
+      <th>Date</th>
+      <th>Commandes</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for sign in my_history %}
+      <tr>
+        <td>{{sign.gloss}}</td>
+        <td>{{sign.keywords}}</td>
+        <td>
+            <img src={{sign.url}}>
+        </td>
+        <td>{{sign.date}}</td>
+        <td>
+            <button class="action" onclick="alert('Supprimer')">Validation</button>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<script src="../static/js/dashboard.js"></script>
+</body>
+</html>

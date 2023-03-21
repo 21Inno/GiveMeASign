@@ -1,0 +1,32 @@
+.panelLsfb {
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  padding: 0.5rem;
+}
+
+.panelLsfb-heading {
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+  padding: 0.5rem;
+}
+
+.panelLsfb-heading .level-left {
+  display: flex;
+  align-items: center;
+}
+
+.panelLsfb-heading img {
+  margin-right: 0.5rem;
+}
+
+.panelLsfb-block {
+  display: block;
+  padding: 0.5rem;
+  color: black;
+  text-decoration: none;
+}
+
+.panelLsfb-block:hover {
+  background-color: #f5f5f5;
+}
