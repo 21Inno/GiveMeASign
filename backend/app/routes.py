@@ -14,7 +14,7 @@ import spacy
 import fr_core_news_sm
 # from init import app
 
-from .models import User, Group, UserHistory, Sign, sign_to_dict
+from .models import User, Group, UserHistory, Sign, sign_to_dict,SignProposition,group_Public,anonyme_user
 from flask_login import login_required, login_user, logout_user, current_user
 from werkzeug.urls import url_parse
 from flask_sqlalchemy import SQLAlchemy
@@ -111,8 +111,6 @@ def translate():
 
     return jsonify(requete_gif_list)
 
-    # Ensure that the API returns a 200 (OK) status code
-    # print('ok get')
 
 
 @app.route('/upload/<mot>', methods=['GET', 'POST'])
@@ -130,15 +128,22 @@ def upload(mot):
        un messsage de succès apres la reception de la video
        ""    ""    d echec si la reception ne s est pas faite
     """
+    if current_user.is_authenticated:
+
+        current_group= current_user.group.name
+        _current_user = current_user.username
+    else:
+        current_group = "Public"
+        _current_user = "ano"
     if request.method == 'POST':
 
-        directory = os.path.abspath(os.path.dirname(__file__)) + "/static/videos"
+        directory = os.path.abspath(os.path.dirname(__file__)) + "/static/videos/" + current_group
         if not os.path.isdir(directory):
             os.mkdir(directory)
 
         # create a directory to save the video if
         # it not already existed
-        directory2 = os.path.abspath(os.path.dirname(__file__)) + "/static/videos/" + "videos_" + mot
+        directory2 = os.path.abspath(os.path.dirname(__file__)) + "/static/videos/" + current_group + "/videos_" + mot
 
         if not os.path.isdir(directory2):
             os.mkdir(directory2)
@@ -162,9 +167,13 @@ def upload(mot):
             dico["videos_" + mot] = [video_file.filename + str(count)]
         print(dico)
         video_file.save(path)  # enregistrement de la vidéo
-
+        proposition = SignProposition(gloss=video_file.filename + str(count), keywords="mot-clé1, mot-clé2",
+                                      url=path, group_name=current_group,
+                                      author_name=_current_user)
+        db.session.add(proposition)
+        db.session.commit()
         return 'File uploaded successfully'
-    return render_template("record.html", mot=mot)
+    return render_template("record.html", mot=mot,group=current_group)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -187,7 +196,7 @@ def expert_main():
 
 @app.route('/proposition/<sub>', methods=['GET', 'POST'])
 def proposition_videos(sub):
-    directory = 'app/static/videos/videos_' + sub
+    directory = 'app/static/videos/StMarie/videos_' + sub
     videos_ = [f for f in os.listdir(directory) if f.endswith('.mp4')]
     return render_template('video_for_sign.html', videos=videos_, word=sub)
 
@@ -201,15 +210,15 @@ def login():
         _password = request.form['password']
         group = Group.query.filter_by(name=_group).first()
         user = User.query.filter_by(username=_username).first()
+
         print(_group, _username, _password)
+
         if group is None:
-            # flash("You are not registered yet.", "log_warning")
             print("pas de group")
             return redirect(url_for("login"))
 
         if not group.check_password(_password):
             print("bad pwd")
-            # flash("GroupName or password incorrect.", "log_warning")
             return redirect(url_for("login"))
 
         if user is None:
@@ -225,7 +234,7 @@ def login():
         db.session.commit()
 
         next_page = request.args.get('next')
-        if next_page :# or url_parse(next_page).netloc != '':
+        if next_page :
             next_page = url_for('dashboard')
             print("ici"+str(next_page))
             return redirect(next_page)
@@ -239,6 +248,7 @@ def login():
 def logout():
     logout_user()
     return jsonify({"login_state":"false"})
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
@@ -249,7 +259,6 @@ def dashboard():
     print(my_history)
     print(current_user.group)
     return render_template("dashboard.html", user=current_user, my_history=my_history)
-    # return 'Welcome to the dashboard!'
 
 
 if __name__ == "__main__":

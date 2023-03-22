@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 body: formData
             }).then(response => response.json())
                 .then(data => {
-                    if (data.success) {
+                    if (data.group_user) {
                         let group = data.group_user;
                         let username = data.username_user;
                         showLogoutButton(group,username);
