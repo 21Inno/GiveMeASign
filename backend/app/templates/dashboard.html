@@ -19,7 +19,8 @@
   </style>
 </head>
 <body>
-<h3>Mon historique</h3>
+<h2> Bonjour {{ user.username }} du groupe {{ user.group.name }} </h2>
+<h3>Mon historique </h3>
 <br>
 <table>
   <thead>
@@ -47,6 +48,5 @@
     {% endfor %}
   </tbody>
 </table>
-<script src="../static/js/dashboard.js"></script>
 </body>
 </html>

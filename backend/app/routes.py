@@ -194,8 +194,8 @@ def proposition_videos(sub):
 
 # Login
 @app.route('/login', methods=["GET", "POST"])
-def login_to_group():
-    if request.method == 'POST':
+def login():
+    if request.method != 'GET':
         _group = request.form['group-name']
         _username = request.form['username']
         _password = request.form['password']
@@ -205,12 +205,12 @@ def login_to_group():
         if group is None:
             # flash("You are not registered yet.", "log_warning")
             print("pas de group")
-            return redirect(url_for("login_to_group"))
+            return redirect(url_for("login"))
 
         if not group.check_password(_password):
             print("bad pwd")
             # flash("GroupName or password incorrect.", "log_warning")
-            return redirect(url_for("login_to_group"))
+            return redirect(url_for("login"))
 
         if user is None:
             user = User(username=_username, role='normal', group=group)
@@ -225,17 +225,20 @@ def login_to_group():
         db.session.commit()
 
         next_page = request.args.get('next')
-        if not next_page or url_parse(next_page).netloc != '':
+        if next_page :# or url_parse(next_page).netloc != '':
             next_page = url_for('dashboard')
-            print("ici")
-        #ws = websocket.create_connection("http://127.0.0.1:5000/")
-        #ws.send(json.dumps({'user_logged_in': True}))
-
-        return redirect(next_page)
-
+            print("ici"+str(next_page))
+            return redirect(next_page)
+        print("post")
+        return jsonify({"group_user":_group,"username_user":_username})
+        #return redirect(next_page)
+    print("get login")
     return render_template('login.html')
 
-
+@app.route('/logout', methods=["GET", "POST"])
+def logout():
+    logout_user()
+    return jsonify({"login_state":"false"})
 @app.route('/dashboard')
 @login_required
 def dashboard():
@@ -244,6 +247,7 @@ def dashboard():
         sign = Sign.query.filter_by(id=hist.sign_id).first()
         my_history.append(sign_to_dict(sign))
     print(my_history)
+    print(current_user.group)
     return render_template("dashboard.html", user=current_user, my_history=my_history)
     # return 'Welcome to the dashboard!'
 

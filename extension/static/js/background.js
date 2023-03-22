@@ -53,3 +53,8 @@ chrome.contextMenus.onClicked.addListener(function(info, tab) {
 
 
 //-----------------------------------------------------
+chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+  if (message.message) {
+    chrome.action.setPopup({ popup: "popup-loggedin.html" });
+  }
+});
