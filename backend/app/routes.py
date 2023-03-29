@@ -198,7 +198,10 @@ def upload(mot):
             return 'No video file provided'
 
         video_file = request.files.get('video')
+
         filename = secure_filename(video_file.filename)  # permet de securiser le fichier
+
+        keywords = request.files.get('keywords').filename
 
         # on va nommer les videos par leur nom + un identifiant
         # en fonction de leur ordre de sauvegarde dans le dossier
@@ -225,9 +228,9 @@ def upload(mot):
             writer.append_data(img)
 
         writer.close()
-
+        print("les keywords", keywords)
         # save DB
-        proposition = SignProposition(gloss=video_file.filename + "_" + str(count), keywords="mot-clé1, mot-clé2",
+        proposition = SignProposition(gloss=video_file.filename + "_" + str(count), keywords=keywords,
                                       url=path_gif, group_name=current_group,
                                       author_name=_current_user)
         db.session.add(proposition)

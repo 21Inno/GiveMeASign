@@ -52,15 +52,32 @@ function startRecording(stream, length) {
 
       // Envoyer le fichier enregistré si "valider" est appuyé
       validateButton.addEventListener('click', () => {
+        console.log("ici1")
         const filename = document.getElementById('mot_record').textContent;
         var formData = new FormData();
+        let keywordsInputButton = document.getElementById("keywordsInput");
+        //let keywordsInput = keywordsInputButton.value()
+        let saveKeywords =document.getElementById("saveKeyword");
+        //let valuesKeywords = "Pas de mots-clés";
+        let valuesKeywords = keywordsInputButton.value;
+        if (valuesKeywords === " "){
+          valuesKeywords = "Pas de mots-clés"
+        }
+        /*saveKeywords.addEventListener('click', () => {
+          console.log("ici2")
+          valuesKeywords = keywordsInputButton.value;
+          alert(valuesKeywords)
+        });*/
+        let mot_keywords = {keywords:valuesKeywords}
+        const blob_mot_keywords = new Blob([JSON.stringify(mot_keywords)], { type: 'application/json' });
+
         formData.append('video', recordedBlob, filename);
-        if (clicked) { formData = null };
+        formData.append('keywords', blob_mot_keywords, valuesKeywords);
+
+        if (clicked) { formData = null }
         fetch('http://127.0.0.1:5000/upload/' + filename, {
           method: 'POST',
-          headers: new Headers({
-            'Content-Type': 'video/mp4',
-          }),
+
           body: formData,
           mode: 'no-cors',
         }).then(() => resolve(chunks));
