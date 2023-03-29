@@ -120,7 +120,7 @@ def translate():
         for gloss in dico_of_gloss_keyword:
             # if mot in list(dico_of_gloss_keyword.keys()):
             final_gloss_dict[gloss] = dico_of_gloss_keyword[gloss]
-
+    print([trad for trad in all_traduction_data])
     # get a list of sign
     requete_gif_list_corpus = [
         (trad['_gloss'], api_gif_base + trad['_url'], final_gloss_dict[trad['_gloss']], "CorpusLSFB", "CorpusLSFB")
@@ -134,16 +134,15 @@ def translate():
     # for lem in lemme input :
     print(lemme_input)
     filters = [SignProposition.gloss.like(f'%{word}%') for word in lemme_input]
-    print(filters)
-    proposition_object = SignProposition.query.filter(db.or_(*filters)).all()
+    print("filter : ",filters)
 
     good_sign_proposition = []
 
-    for prop in proposition_object:
-        good_sign_proposition.append((prop.gloss, prop.url, prop.keywords, prop.author_name, str(prop.group_name)))
+    if len(filters) != 0:
+        proposition_object = SignProposition.query.filter(db.and_(*filters,SignProposition.group_name == _current_group)).all()
+        for prop in proposition_object:
+            good_sign_proposition.append((prop.gloss, prop.url, prop.keywords, prop.author_name, str(prop.group_name)))
 
-    """good_sign_proposition = [(proposition_object.gloss, proposition_object.url, proposition_object.keywords,
-                              proposition_object.author_name, proposition_object.group_name)]"""
     gifs_ = requete_gif_list_corpus + good_sign_proposition
     print(gifs_)
 
@@ -221,10 +220,13 @@ def upload(mot):
         vid = imageio.get_reader(path)
         fps = vid.get_meta_data()['fps']
         writer = imageio.get_writer(path_gif, fps=fps)
+
         for img in vid:
             writer.append_data(img)
 
         writer.close()
+
+        # save DB
         proposition = SignProposition(gloss=video_file.filename + "_" + str(count), keywords="mot-clé1, mot-clé2",
                                       url=path_gif, group_name=current_group,
                                       author_name=_current_user)
