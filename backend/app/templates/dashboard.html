@@ -40,9 +40,9 @@
         <td>
             <img src={{sign.url}}>
         </td>
-        <td>{{sign.date}}</td>
+        <td>{{sign.datetime}}</td>
         <td>
-            <button class="action" onclick="alert('Supprimer')">Validation</button>
+            <a href="/delete_in_history/{{sign.id}}">Remove</a>
         </td>
       </tr>
     {% endfor %}

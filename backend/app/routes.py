@@ -14,17 +14,23 @@ import spacy
 import fr_core_news_sm
 # from init import app
 
-from .models import User, Group, UserHistory, Sign, sign_to_dict,SignProposition,group_Public,anonyme_user
+from .models import User, Group, UserHistory, Sign, sign_to_dict, SignProposition, group_Public, anonyme_user
 from flask_login import login_required, login_user, logout_user, current_user
 from werkzeug.urls import url_parse
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from .utils import *
 import websocket
+from datetime import datetime
+
+from moviepy.editor import VideoFileClip
+import imageio
 
 dico = {}
 nlp = spacy.load("fr_core_news_sm")
 CORS(app, resources=r'/*')
+
+memo_current_user = {current_user: ["Public", "ano"]}
 
 
 @app.route("/translate", methods=["GET", "POST"])
@@ -40,6 +46,16 @@ def translate():
     :return: la fonction renvoie un jsonify contenant une liste des signes correspond au mot
     un element de cette liste est un tuple contenant (Gloss,line_gif,mots-clé)
     """
+    _current_user = list(memo_current_user)[-1]
+
+    if _current_user.is_authenticated:
+        _current_group = memo_current_user[_current_user][0]
+        _current_username = memo_current_user[_current_user][1]
+    else:
+        _current_group = "Public"
+        _current_username = "ano"
+
+    print(_current_group, _current_username)
 
     ##if request.method == 'POST':
     # Points API du dico.corpus-lsfb
@@ -81,8 +97,10 @@ def translate():
     elif nature_du_mot == 'GroupNom':
         lemme.append(mot_select)
 
+    # -------------------------Recherche dans le corpus---------------------------------
     # la liste "lemme" contient maintenant le mot et toutes ses variations possibles
     # recuperer tous les gloss et leurs mots clés
+
     all_traduction_data, dico_of_gloss_keyword = getKeywords(lemme, api_sign_base)
 
     # print(dico_of_gloss_keyword)
@@ -102,15 +120,36 @@ def translate():
         for gloss in dico_of_gloss_keyword:
             # if mot in list(dico_of_gloss_keyword.keys()):
             final_gloss_dict[gloss] = dico_of_gloss_keyword[gloss]
-    # print(final_gloss_dict)
 
     # get a list of sign
-    requete_gif_list = [(trad['_gloss'], api_gif_base + trad['_url'], final_gloss_dict[trad['_gloss']]) for trad in
-                        all_traduction_data if trad['_gloss'] in list(final_gloss_dict.keys())]
-    print(jsonify(requete_gif_list))
+    requete_gif_list_corpus = [
+        (trad['_gloss'], api_gif_base + trad['_url'], final_gloss_dict[trad['_gloss']], "CorpusLSFB", "CorpusLSFB")
+        for trad in
+        all_traduction_data if trad['_gloss'] in list(final_gloss_dict.keys())]
+    # ------------------------ Fin recherche dans le corpus ----------------------
 
-    return jsonify(requete_gif_list)
+    # -------------------------Recherche dico parallele -----------------------------
+    lemme_input = lemme
+    # good_sign_proposition = []        # lievre lievre1
+    # for lem in lemme input :
+    print(lemme_input)
+    filters = [SignProposition.gloss.like(f'%{word}%') for word in lemme_input]
+    print(filters)
+    proposition_object = SignProposition.query.filter(db.or_(*filters)).all()
 
+    good_sign_proposition = []
+
+    for prop in proposition_object:
+        good_sign_proposition.append((prop.gloss, prop.url, prop.keywords, prop.author_name, str(prop.group_name)))
+
+    """good_sign_proposition = [(proposition_object.gloss, proposition_object.url, proposition_object.keywords,
+                              proposition_object.author_name, proposition_object.group_name)]"""
+    gifs_ = requete_gif_list_corpus + good_sign_proposition
+    print(gifs_)
+
+    print(jsonify(gifs_))
+    # ---------------------------      ----------------------------
+    return jsonify({"corpus": gifs_, "groupName": _current_group})
 
 
 @app.route('/upload/<mot>', methods=['GET', 'POST'])
@@ -130,7 +169,7 @@ def upload(mot):
     """
     if current_user.is_authenticated:
 
-        current_group= current_user.group.name
+        current_group = current_user.group.name
         _current_user = current_user.username
     else:
         current_group = "Public"
@@ -138,15 +177,21 @@ def upload(mot):
     if request.method == 'POST':
 
         directory = os.path.abspath(os.path.dirname(__file__)) + "/static/videos/" + current_group
+        directory_gif = os.path.abspath(os.path.dirname(__file__)) + "\\static\\gifs\\" + current_group
+
         if not os.path.isdir(directory):
             os.mkdir(directory)
-
+        if not os.path.isdir(directory_gif):
+            os.mkdir(directory_gif)
         # create a directory to save the video if
         # it not already existed
         directory2 = os.path.abspath(os.path.dirname(__file__)) + "/static/videos/" + current_group + "/videos_" + mot
-
+        directory_gif2 = os.path.abspath(
+            os.path.dirname(__file__)) + "\\static\\gifs\\" + current_group + "\\videos_" + mot
         if not os.path.isdir(directory2):
             os.mkdir(directory2)
+        if not os.path.isdir(directory_gif2):
+            os.mkdir(directory_gif2)
         # print(request.files)
 
         # check if there is a video file
@@ -160,25 +205,46 @@ def upload(mot):
         # en fonction de leur ordre de sauvegarde dans le dossier
         count = len(fnmatch.filter(os.listdir(directory2), '*.*'))
         path = os.path.join(directory2, filename + "_" + str(count) + '.mp4')
+        path_gif = os.path.join(directory_gif2, filename + "_" + str(count) + '.gif')
         try:
             if not video_file.filename + str(count) in dico["videos_" + mot]:
-                dico["videos_" + mot].append(video_file.filename + str(count))
+                dico["videos_" + mot].append(video_file.filename + "_" + str(count))
+
+
+
         except:
             dico["videos_" + mot] = [video_file.filename + str(count)]
         print(dico)
         video_file.save(path)  # enregistrement de la vidéo
-        proposition = SignProposition(gloss=video_file.filename + str(count), keywords="mot-clé1, mot-clé2",
-                                      url=path, group_name=current_group,
+        # video_clip = VideoFileClip(path)  # creation du gif
+        # video_clip.write_gif(path_gif)  # enregistrement du gif
+        vid = imageio.get_reader(path)
+        fps = vid.get_meta_data()['fps']
+        writer = imageio.get_writer(path_gif, fps=fps)
+        for img in vid:
+            writer.append_data(img)
+
+        writer.close()
+        proposition = SignProposition(gloss=video_file.filename + "_" + str(count), keywords="mot-clé1, mot-clé2",
+                                      url=path_gif, group_name=current_group,
                                       author_name=_current_user)
         db.session.add(proposition)
         db.session.commit()
         return 'File uploaded successfully'
-    return render_template("record.html", mot=mot,group=current_group)
+    return render_template("record.html", mot=mot, group=current_group)
 
 
 @app.route('/', methods=['GET', 'POST'])
 def expert_main():
-    main_folder = 'app/static/videos/'
+    if current_user.is_authenticated:
+        current_group = current_user.group.name
+        current_username = current_user.username
+
+    else:
+        current_group = "Public"
+        current_username = "ano"
+
+    main_folder = 'app/static/videos/' + current_group + '/'
 
     subdirectories = {}
     print(main_folder)
@@ -196,12 +262,19 @@ def expert_main():
 
 @app.route('/proposition/<sub>', methods=['GET', 'POST'])
 def proposition_videos(sub):
-    directory = 'app/static/videos/StMarie/videos_' + sub
+    if current_user.is_authenticated:
+        current_group = current_user.group.name
+        current_username = current_user.username
+
+    else:
+        current_group = "Public"
+        current_username = "ano"
+    directory = 'app/static/videos/' + current_group + '/videos_' + sub
     videos_ = [f for f in os.listdir(directory) if f.endswith('.mp4')]
     return render_template('video_for_sign.html', videos=videos_, word=sub)
 
 
-# Login
+# Login-------------------------------------------------------------------------
 @app.route('/login', methods=["GET", "POST"])
 def login():
     if request.method != 'GET':
@@ -226,28 +299,73 @@ def login():
         else:
             if user.group_id != group.id:
                 user = User(username=_username, role='normal', group=group)
-        login_user(user)
-        print('login done')
 
         # Add the user in the dict of users
         db.session.add(user)
         db.session.commit()
+        login_user(user)
+        memo_current_user[user] = [user.group.name, user.username]
+        print('login done')
 
         next_page = request.args.get('next')
-        if next_page :
+        if next_page:
             next_page = url_for('dashboard')
-            print("ici"+str(next_page))
+            print("ici" + str(next_page))
             return redirect(next_page)
         print("post")
-        return jsonify({"group_user":_group,"username_user":_username})
-        #return redirect(next_page)
+        return jsonify({"group_user": _group, "username_user": _username})
+        # return redirect(next_page)
     print("get login")
     return render_template('login.html')
+
+
+@app.route('/addHistory', methods=["GET", "POST"])
+def addHistory():
+    _current_user = list(memo_current_user)[-1]
+
+    if _current_user.is_authenticated:
+        _current_group = memo_current_user[_current_user][0]
+        _current_username = memo_current_user[_current_user][1]
+    else:
+        _current_group = "Public"
+        _current_username = "ano"
+
+    _gloss_name = json.loads(request.data, strict=False)["gloss_name"]
+    _keywords = json.loads(request.data, strict=False)["keywords"]
+    if type(_keywords) == list:
+        _keywords1 = ", ".join(_keywords)
+    else:
+        _keywords1 = _keywords
+    _url = json.loads(request.data, strict=False)["url"]
+
+    print(_current_group, _current_username)
+    print(_current_user)
+    print(_gloss_name, _keywords, _url)
+
+    # datetime object containing current date and time
+    now = datetime.now()
+
+    new_sign = Sign(gloss=_gloss_name, keywords=_keywords1,
+                    url=_url, datetime=now)
+    new_user_history = UserHistory(user=_current_user, sign=new_sign)
+    old_sign = Sign.query.filter_by(gloss=_gloss_name).first()
+    if old_sign is not None:
+        old_historique = UserHistory.query.filter_by(sign_id=old_sign.id, user_id=_current_user.id).first()
+        db.session.delete(old_sign)
+        db.session.delete(old_historique)
+
+    db.session.add(new_sign)
+    db.session.add(new_user_history)
+    db.session.commit()
+    return jsonify("Ajouté à l'historique")
+
 
 @app.route('/logout', methods=["GET", "POST"])
 def logout():
     logout_user()
-    return jsonify({"login_state":"false"})
+    memo_current_user.popitem()
+    return jsonify({"login_state": "false"})
+
 
 @app.route('/dashboard')
 @login_required
@@ -256,9 +374,29 @@ def dashboard():
     for hist in current_user.history:
         sign = Sign.query.filter_by(id=hist.sign_id).first()
         my_history.append(sign_to_dict(sign))
+
     print(my_history)
+    my_history1 = my_history[::-1]
+    print(my_history1)
+
     print(current_user.group)
-    return render_template("dashboard.html", user=current_user, my_history=my_history)
+    return render_template("dashboard.html", user=current_user, my_history=my_history1)
+
+
+# Route for deleting a movie from my list
+@app.route("/delete_in_history/<int:identifiant>", methods=["GET"])
+@login_required
+def delete(identifiant):
+    _sign = Sign.query.get(identifiant)
+    _historique = UserHistory.query.filter_by(sign_id=identifiant, user_id=current_user.id).first()
+
+    # Check if the current_user has the movie in my list
+    if _historique is not None:
+        db.session.delete(_historique)
+        db.session.delete(_sign)
+        db.session.commit()
+
+    return redirect(url_for("dashboard"))
 
 
 if __name__ == "__main__":

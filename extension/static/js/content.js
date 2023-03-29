@@ -1,5 +1,3 @@
-//let mot;
-//let context;
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
   switch (request._action){
@@ -23,7 +21,8 @@ function getGifsAndCreatePopup(mot, context) {
     })
         .then(response => response.json())
         .then(data => {
-            let gifs = data;
+            let gifs = data.corpus;
+            let group = data.groupName;
 
             console.log(gifs);
             if (gifs.length === 0) {
@@ -31,12 +30,12 @@ function getGifsAndCreatePopup(mot, context) {
                 //faire un modal pour ici
                 createModalError(mot)
             } else {
-                createModal(mot, gifs)
+                createModal(mot, gifs,group)
             }
         });
 }
 
-function createModal(mot,gifs) {
+function createModal(mot,gifs,group) {
     // Create modal elements
     const modal = document.createElement('div');
     modal.className="modal12";
@@ -65,6 +64,7 @@ function createModal(mot,gifs) {
         modal.remove();
     });
     navbar.appendChild(closeButton)
+
     //gif
     const gifImage = document.createElement('img');
     gifImage.classList.add('gif-image');
@@ -72,6 +72,9 @@ function createModal(mot,gifs) {
     // gloss and keyword(s)
     const glossName = document.createElement('span');
     const keywords = document.createElement('p');
+    //sources and authors
+    const source = document.createElement('p');
+    const author = document.createElement('p');
     //button previous
     const prevButton = document.createElement('button');
     prevButton.classList.add('prev-button');
@@ -80,6 +83,17 @@ function createModal(mot,gifs) {
     const nextButton = document.createElement('button');
     nextButton.classList.add('next-button');
     nextButton.innerText = 'Next';
+    // add button to open a new tab with examples
+    const exampleButton = document.createElement('a');
+    exampleButton.classList.add('example-button');
+    exampleButton.innerText = 'Voir exemple(s)';
+    exampleButton.href = 'https://dico.corpus-lsfb.be/plugin?gloss='.concat(glossName.innerText);
+    exampleButton.target = "_blank"
+    
+    // add to history button
+    const historyButton = document.createElement('button');
+    historyButton.classList.add('history-button');
+    historyButton.innerText = 'Ajout à l\'historique';
 
     // Add event listeners to previous and next buttons
     let currentGifIndex = 0;
@@ -88,26 +102,64 @@ function createModal(mot,gifs) {
         gifImage.src = gifs[currentGifIndex][1];
         glossName.innerHTML = gifs[currentGifIndex][0]
         keywords.innerHTML = gifs[currentGifIndex][2]
+        source.innerHTML = "Source : ".concat(gifs[currentGifIndex][4])
+        author.innerHTML = "Auteur : ".concat(gifs[currentGifIndex][3])
+        if (gifs[currentGifIndex][4] !== "CorpusLSFB"){
+            exampleButton.style.display = "none"
+        }
+        if(group === 'Public'){
+            historyButton.style.display = "none";
+        }
+        historyButton.disabled = false;
+        historyButton.innerHTML = "Ajout à l\'historique"
+
     });
+
     nextButton.addEventListener('click', () => {
         currentGifIndex = (currentGifIndex + 1) % gifs.length;
         gifImage.src = gifs[currentGifIndex][1];
         glossName.innerHTML = gifs[currentGifIndex][0]
         keywords.innerHTML = gifs[currentGifIndex][2]
+        source.innerHTML = "Source : ".concat(gifs[currentGifIndex][4])
+        author.innerHTML = "Auteur : ".concat(gifs[currentGifIndex][3])
+        if (gifs[currentGifIndex][4] !== "CorpusLSFB"){
+            exampleButton.style.display = "none"
+        }
+        if(group === 'Public'){
+            historyButton.style.display = "none";
+        }
+        historyButton.disabled = false;
+        historyButton.innerHTML = "Ajout à l\'historique"
     });
 
     // Set initial GIF image source
     gifImage.src = gifs[currentGifIndex][1];
-    glossName.innerHTML = gifs[currentGifIndex][0]
-    keywords.innerHTML = gifs[currentGifIndex][2]
+    glossName.innerHTML = gifs[currentGifIndex][0];
+    keywords.innerHTML = gifs[currentGifIndex][2];
+    source.innerHTML = "Source : ".concat(gifs[currentGifIndex][4]);
+    author.innerHTML = "Auteur : ".concat(gifs[currentGifIndex][3]);
     const br = document.createElement('br');
-
-    // add button to open a new tab with examples
-    const exampleButton = document.createElement('a');
-    exampleButton.classList.add('example-button');
-    exampleButton.innerText = 'Voir exemple(s)';
-    exampleButton.href = 'https://dico.corpus-lsfb.be/plugin?gloss='.concat(glossName.innerText);
-    exampleButton.target = "_blank"
+    if (gifs[currentGifIndex][4] !== "CorpusLSFB"){
+        exampleButton.style.display = "none";
+    }
+    historyButton.addEventListener('click',function () {
+         fetch("http://127.0.0.1:5000/addHistory", {
+            method: "POST",
+            headers: new Headers({
+                "Content-Type": "application/json"
+            }),
+            body: JSON.stringify({gloss_name: gifs[currentGifIndex][0], keywords: gifs[currentGifIndex][2],url:gifs[currentGifIndex][1]})
+         })
+             .then(response => response.json())
+             .then(data => {
+                 historyButton.disabled = true;
+                 historyButton.innerHTML = data;
+                 //historyButton.style.background = "grey"
+             });
+    });
+    if(group === 'Public'){
+        historyButton.style.display = "none";
+    }
 
     // Add elements to modal content
     modalContent.appendChild(navbar);
@@ -118,13 +170,19 @@ function createModal(mot,gifs) {
     modalContent.appendChild(nextButton);
     modalContent.appendChild(br)
     modalContent.appendChild(glossName);
-    modalContent.appendChild(keywords)
-    modalContent.appendChild(exampleButton)
+    modalContent.appendChild(keywords);
+    //modalContent.appendChild(br);
+    modalContent.appendChild(source);
+    modalContent.appendChild(author);
+    modalContent.appendChild(historyButton);
+    modalContent.appendChild(exampleButton);
+
 
   // Add modal content to modal and add modal to document
   modal.appendChild(modalContent);
   document.body.appendChild(modal);
 }
+
 
 function createModalError(mot) {
     console.log("createModalError")

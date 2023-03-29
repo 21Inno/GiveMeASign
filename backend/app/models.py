@@ -9,7 +9,7 @@ from sqlalchemy.orm import relationship
 
 def sign_to_dict(sign):
     sign_dict = {}
-    # sign_dict['id'] = sign.id
+    sign_dict['id'] = sign.id
     sign_dict['gloss'] = sign.gloss
     sign_dict['keywords'] = sign.keywords
     sign_dict['url'] = sign.url
@@ -52,7 +52,7 @@ class Sign(db.Model):
     gloss = db.Column(db.String(128))
     keywords = db.Column(db.String(500))
     url = db.Column(db.String(1000))
-    datetime = db.Column(db.DateTime, default=datetime.utcnow)
+    datetime = db.Column(db.DateTime, default=datetime.now)
     user_history = relationship('UserHistory', backref='sign', lazy=True)
 
     def __str__(self):
@@ -82,13 +82,22 @@ with app.app_context():
     new_user = User(username='inno', role='normal', group=group_StMarie)
     new_user1 = User(username='baba', role='normal', group=group_StMarie)
     anonyme_user = User(username='ano', role='normal', group=group_Public)
+
+    now = datetime.now()
+
+    print("now =", now)
+
+    # dd/mm/YY H:M:S
+    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+    print("date and time =", dt_string)
+
     # create a new sign
     new_sign = Sign(gloss='MANGER', keywords='manger, alimentation, dessert',
-                    url='https://corpus-lsfb.be/img/pictures/signe_dbdb6f59d8edcdc7d51135d3f6f62dd4.gif')
+                    url='https://corpus-lsfb.be/img/pictures/signe_dbdb6f59d8edcdc7d51135d3f6f62dd4.gif',datetime=now)
     new_sign1 = Sign(gloss='DORMIR', keywords='dormir, dormeur, sommeil',
-                     url='https://corpus-lsfb.be/img/pictures/signe_aba4817ea7264d451f611a084563b910.gif')
+                     url='https://corpus-lsfb.be/img/pictures/signe_aba4817ea7264d451f611a084563b910.gif',datetime=now)
     new_sign2 = Sign(gloss='COURIR', keywords='courir, course',
-                     url='https://corpus-lsfb.be/img/pictures/signe_29457ccb6c819c48e83c53aa4e882c62.gif')
+                     url='https://corpus-lsfb.be/img/pictures/signe_29457ccb6c819c48e83c53aa4e882c62.gif',datetime=now)
 
     # create a new user history and associate it with the user and the sign
     new_user_history = UserHistory(user=new_user, sign=new_sign)
@@ -96,8 +105,8 @@ with app.app_context():
     new_user_history2 = UserHistory(user=new_user1, sign=new_sign2)
 
     #proposition
-    proposition = SignProposition(gloss="Lievres_0",keywords="lievre, lievres",url="app/static/videos/StMarie/videos_Lievres/Lievres_0.mp4",author_name=new_user.username,group_name=group_StMarie.name)
-    proposition1 = SignProposition(gloss="Lievres_0",keywords="lievre, lievres",url="app/static/videos/StMarie/videos_Lievres/Lievres_0.mp4",author_name=anonyme_user.username, group_name=group_Public.name)
+    proposition = SignProposition(gloss="Lièvres_0",keywords="lièvre, lièvres",url="C:/Users/CyrilleAdm/PycharmProjects/GiveMeASign/backend/app/static/gifs/StMarie/videos_Lievres/Lievres_0.gif",author_name=new_user.username,group_name=group_StMarie.name)
+    proposition1 = SignProposition(gloss="Lièvres_0",keywords="lièvre, lièvres",url="C:/Users/CyrilleAdm/PycharmProjects/GiveMeASign/backend/app/static/gifs/StMarie/videos_Lievres/Lievres_1.gif",author_name=anonyme_user.username, group_name=group_Public.name)
 
     # add the group, user, sign, and user history to the database
     db.session.add(group_StMarie)
@@ -113,16 +122,10 @@ with app.app_context():
     db.session.add(proposition)
     db.session.add(proposition1)
     db.session.commit()
-
     # print the user's id and their associated group and history
     print(new_user.id)
     print(new_user.group.name)
     print(new_user.history)
-    """for hist in new_user.history:
-        print(hist.sign_id)
-        sign = Sign.query.filter_by(id = hist.sign_id).first()
-        print(sign_to_dict(sign))"""
-
 
 @login_manager.user_loader
 def user_loader(userid):

@@ -1,6 +1,3 @@
-
-
-
 document.addEventListener("DOMContentLoaded", function() {
     chrome.storage.session.get(["IsLoggedIn","group_user","username_user"]).then((result) => {
         if(result.IsLoggedIn === "true"){
@@ -63,7 +60,11 @@ document.addEventListener("DOMContentLoaded", function() {
             }).then(response => response.json())
                 .then(data => {
                     if (data.login_state === "false") {
+                        chrome.storage.session.set({ IsLoggedIn: "false", group_user:"Public",username_user:"ano" }).then(() => {
+                              console.log("Value is set to " + "IsLoggedIn");
+                            });
                         showLoginForm(logoutButton);
+
                     } else {
                         alert("Logout failed. Please try again.");
                     }
@@ -103,8 +104,10 @@ document.addEventListener("DOMContentLoaded", function() {
                     if (data.group_user) {
                         let group = data.group_user;
                         let username = data.username_user;
-                        showLogoutButton(group,username);
-                        //showLogoutButton();
+                        chrome.storage.session.set({ IsLoggedIn: "true", group_user:group,username_user:username }).then(() => {
+                              console.log("Value is set to " + "IsLoggedIn");
+                            });
+                        showLogoutButton(group,username,loginForm);
                     } else {
                         alert("Login failed. Please try again.");
                     }

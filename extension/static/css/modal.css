@@ -65,6 +65,18 @@
   /*margin-right: 5px;*/
   right: 5px;
 }
+.history-button{
+  position: absolute;
+  top:90%;
+  background-color: #43ad1a;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  /*margin-right: 5px;*/
+  left: 5px;
+}
+
 .example-button:hover {
   background-color: #666;
 }
