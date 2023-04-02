@@ -106,12 +106,15 @@ function createModal(mot,gifs,group) {
         author.innerHTML = "Auteur : ".concat(gifs[currentGifIndex][3])
         if (gifs[currentGifIndex][4] !== "CorpusLSFB"){
             exampleButton.style.display = "none"
-        }
+        }else{exampleButton.style.display = "block";}
         if(group === 'Public'){
             historyButton.style.display = "none";
+        }else{
+            historyButton.style.display = "block";
+            historyButton.disabled = false;
+            historyButton.innerHTML = "Ajout à l\'historique"
         }
-        historyButton.disabled = false;
-        historyButton.innerHTML = "Ajout à l\'historique"
+
 
     });
 
@@ -124,12 +127,14 @@ function createModal(mot,gifs,group) {
         author.innerHTML = "Auteur : ".concat(gifs[currentGifIndex][3])
         if (gifs[currentGifIndex][4] !== "CorpusLSFB"){
             exampleButton.style.display = "none"
-        }
+        }else{exampleButton.style.display = "block";}
         if(group === 'Public'){
             historyButton.style.display = "none";
+        }else{
+            historyButton.style.display = "block";
+            historyButton.disabled = false;
+            historyButton.innerHTML = "Ajout à l\'historique"
         }
-        historyButton.disabled = false;
-        historyButton.innerHTML = "Ajout à l\'historique"
     });
 
     // Set initial GIF image source
@@ -141,7 +146,7 @@ function createModal(mot,gifs,group) {
     const br = document.createElement('br');
     if (gifs[currentGifIndex][4] !== "CorpusLSFB"){
         exampleButton.style.display = "none";
-    }
+    }else{exampleButton.style.display = "block";}
     historyButton.addEventListener('click',function () {
          fetch("http://127.0.0.1:5000/addHistory", {
             method: "POST",
@@ -159,7 +164,11 @@ function createModal(mot,gifs,group) {
     });
     if(group === 'Public'){
         historyButton.style.display = "none";
-    }
+    }else{
+            historyButton.style.display = "block";
+            historyButton.disabled = false;
+            historyButton.innerHTML = "Ajout à l\'historique"
+        }
 
     // Add elements to modal content
     modalContent.appendChild(navbar);

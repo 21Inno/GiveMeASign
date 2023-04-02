@@ -1,9 +1,8 @@
 from . import app
 from . import db
 
-from sqlalchemy import text, distinct
 
-from flask import Flask, redirect, jsonify, request, Response, render_template, url_for, flash
+from flask import Flask, redirect, jsonify, request, Response, render_template, url_for, flash,send_file
 from flask_cors import CORS
 import requests
 import json
@@ -16,14 +15,11 @@ import fr_core_news_sm
 
 from .models import User, Group, UserHistory, Sign, sign_to_dict, SignProposition, group_Public, anonyme_user
 from flask_login import login_required, login_user, logout_user, current_user
-from werkzeug.urls import url_parse
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+
 from .utils import *
-import websocket
+
 from datetime import datetime
 
-from moviepy.editor import VideoFileClip
 import imageio
 
 dico = {}
@@ -186,7 +182,7 @@ def upload(mot):
         # it not already existed
         directory2 = os.path.abspath(os.path.dirname(__file__)) + "/static/videos/" + current_group + "/videos_" + mot
         directory_gif2 = os.path.abspath(
-            os.path.dirname(__file__)) + "\\static\\gifs\\" + current_group + "\\videos_" + mot
+            os.path.dirname(__file__)) + "\\static\\gifs\\" + current_group + "\\gifs_" + mot
         if not os.path.isdir(directory2):
             os.mkdir(directory2)
         if not os.path.isdir(directory_gif2):
@@ -212,10 +208,9 @@ def upload(mot):
             if not video_file.filename + str(count) in dico["videos_" + mot]:
                 dico["videos_" + mot].append(video_file.filename + "_" + str(count))
 
-
-
         except:
             dico["videos_" + mot] = [video_file.filename + str(count)]
+
         print(dico)
         video_file.save(path)  # enregistrement de la vidéo
         # video_clip = VideoFileClip(path)  # creation du gif
@@ -229,9 +224,11 @@ def upload(mot):
 
         writer.close()
         print("les keywords", keywords)
+        gif_name = filename + "_" + str(count) + '.gif'
+        api_gif = url_for('get_gif', filename=gif_name, mot=mot, current_group=current_group)
         # save DB
         proposition = SignProposition(gloss=video_file.filename + "_" + str(count), keywords=keywords,
-                                      url=path_gif, group_name=current_group,
+                                      url=api_gif, group_name=current_group,
                                       author_name=_current_user)
         db.session.add(proposition)
         db.session.commit()
@@ -403,6 +400,13 @@ def delete(identifiant):
 
     return redirect(url_for("dashboard"))
 
+
+@app.route('/gifsAPI/<current_group>/<mot>/<filename>')
+def get_gif(filename,mot,current_group):
+    directory_gif2 = os.path.abspath(
+        os.path.dirname(__file__)) + "\\static\\gifs\\" + current_group + "\\gifs_" + mot
+    file_path = os.path.join(directory_gif2, filename)
+    return send_file(file_path, mimetype='image/gif')
 
 if __name__ == "__main__":
     app.run(debug=True)
