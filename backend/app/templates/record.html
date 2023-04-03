@@ -7,101 +7,35 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
-
-    <style>
-        .recorder {
-            position: relative;
-        }
-
-        body {
-            padding: 0;
-            margin: 0;
-            text-align: center;
-            color: red;
-            font-size: 1.2em;
-        }
-
-        svg:not(:root) {
-            display: block;
-        }
-
-        video {
-            background-color: black;
-            display: block;
-            margin: 6px auto;
-            width: 500px;
-            height: 300px;
-            margin-top: 2px;
-            border: 1px solid black;
-        }
-
-        .button {
-            cursor: pointer;
-            display: block;
-            width: 160px;
-            border: 1px solid black;
-            font-size: 16px;
-            text-align: center;
-            padding-top: 2px;
-            padding-bottom: 4px;
-            color: white;
-            background-color: darkgreen;
-            text-decoration: none;
-        }
-
-
-        @keyframes countdown-animation {
-            0% {
-                opacity: 1;
-            }
-
-            90% {
-                opacity: 1;
-            }
-
-            100% {
-                opacity: 0;
-            }
-        }
-
-        #countdown {
-            position: absolute;
-            left: 50%;
-            top: 40%;
-            transform: translate(-50%, -50%);
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            font-size: 48px;
-            color: yellow;
-            background-color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            animation-duration: 3s;
-            animation-timing-function: linear;
-            animation-fill-mode: forwards;
-        }
-
-    </style>
+    <link rel="stylesheet" href="../static/css/record.css">
 </head>
 
 <body>
     <div class="container">
     </div>
-    <h1 style="color: black"> Enregistrement d'un nouveau signe dans le groupe {{ group }}</h1>
+    <h1 class="logo" style="color: black"><a href="/upload/{{mot}}">Enregistrement d'un nouveau signe dans le groupe {{
+            group }}</a> </h1>
     <h3 id="mot_record" class="badge badge-primary">{{mot}}</h3>
+    <br>
     <div class="display-none" id="recorder">
         <video autoplay id="vidBox"> </video>
         <button type="button" id="record" title="commencez l'enregitrement"> <i class="fa fa-play"></i></button>
         <button type="button" id="stop" title="arrêtez l'enregistrement"><i class="fa fa-stop"></i></button>
         <button type="button" id="retry" title="recommencer l'enregistrement en cliquant sur ce bouton">&#8634;</button>
     </div>
+    <br>
+    <br>
     <div>
-        <label for="keywordsInput">Entrer des mots-clés : </label>
+        <label for="keywordsInput">Entrez des mots-clés : </label>
         <input type="text" id="keywordsInput" placeholder="mot-clé 1, mot-clé 2, mot-clé 3" autofocus />
 
     </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <p>&copy; Give Me A Sign</p>
+    </div>
+
     <script src="../static/js/record.js"> </script>
 </body>
 
