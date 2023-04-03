@@ -44,8 +44,8 @@ function startRecording(stream, length) {
 
       //css pour la preview
       recMediaFile.style.position = "absolute"
-      recMediaFile.style.top = "20%"
-      recMediaFile.style.left = "20%"
+      recMediaFile.style.top = "12%"
+      recMediaFile.style.left = "34%"
 
       // Afficher le fichier enregistré
       document.getElementById('recorder').appendChild(recMediaFile);
