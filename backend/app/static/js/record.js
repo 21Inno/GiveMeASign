@@ -42,6 +42,11 @@ function startRecording(stream, length) {
       recMediaFile.controls = true;
       recMediaFile.autoplay = true;
 
+      //css pour la preview
+      recMediaFile.style.position = "absolute"
+      recMediaFile.style.top = "20%"
+      recMediaFile.style.left = "20%"
+
       // Afficher le fichier enregistré
       document.getElementById('recorder').appendChild(recMediaFile);
       document.getElementById('recorder').appendChild(validateButton);
@@ -96,32 +101,30 @@ function startRecording(stream, length) {
   });
 }
 
-function startTimer() {
 
   /*
   This is a function that starts a countdown timer for 3 seconds before starting
   the recording. We use it to let people prepare themselves before signing
   */
-
+function startTimer() {
   var counter = 3;
-  var timer = setInterval(function () {
-
-    $('#countdown').remove();
-
-    var countdown = $('<span id="countdown">' + (counter === 0 ? '' : counter) + '</span>');
-
-    countdown.appendTo($('.container'));
-    setTimeout(() => {
-      if (counter > -1) {
-        $('#countdown').css({ 'font-size': '40vw', 'opacity': 0 });
-      } else {
-        $('#countdown').css({ 'font-size': '10vw', 'opacity': 50 });
+  var countdown = $('<span id="countdown">' + (counter === 0 ? '' : counter) + '</span>');
+  countdown.appendTo($('.container'));
+  setTimeout(function() {
+    countdown.css('animation', 'countdown-animation 3s linear forwards');
+    var interval = setInterval(function() {
+      counter--;
+      countdown.text(counter === 0 ? '' : counter);
+      if (counter === 0) {
+        clearInterval(interval);
+        setTimeout(function() {
+          countdown.remove();
+        }, 1000);
       }
-    }, 20);
-    counter--;
-    if (counter === -1) clearInterval(timer);
+    }, 1000);
   }, 1000);
 }
+  
 
 startButton.addEventListener('click', async () => {
 
@@ -160,6 +163,8 @@ stopButton.addEventListener('click', () => {
   validateButton.disabled = false;
   stopRec(preview.srcObject);
   retryButton.style.visibility = "visible"
+  preview.style.visibility ="hidden"
+
 });
 
 retryButton.addEventListener('click', () => {
@@ -169,6 +174,9 @@ retryButton.addEventListener('click', () => {
   retryButton.disabled = true;
   validateButton.disabled = true;
   retryButton.style.visibility="hidden"
+  preview.style.visibility ="visible"
+
+
 
   startButton.click();
   startButton.disabled = true;
