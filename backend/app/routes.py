@@ -10,14 +10,11 @@ from werkzeug.utils import secure_filename
 import fnmatch
 import spacy
 import fr_core_news_sm
-from .forms import RegisterAdminForm, LoginAdminForm, GroupeForm
+from .forms import RegisterAdminForm, LoginAdminForm, GroupeForm, EditGroupeForm
 from .models import User, Group, UserHistory, Sign, sign_to_dict, SignProposition, group_Public, anonyme_user, Admin
 from flask_login import login_required, login_user, logout_user, current_user
-
 from .utils import *
-
 from datetime import datetime
-
 import imageio
 
 dico = {}
@@ -492,6 +489,51 @@ def adminAddGroup():
         return redirect(url_for("dashboard_admin"))
 
     return render_template("add_group.html", form=form)
+
+@app.route("/dashboard_admin/editGroup/<int:groupId>", methods=["GET", "POST"])
+def adminEditGroup(groupId):
+
+
+    if not current_user.is_authenticated:
+        #if current_user.role == "admin":
+        return redirect(url_for("login_admin"))
+        #else:
+        #return redirect(url_for("login"))
+    if current_user.role != "admin":
+        return redirect(url_for("dashboard"))
+
+    # Form data
+    form = EditGroupeForm()
+    _group = Group.query.get(groupId)
+    if form.validate_on_submit():
+        # create the group
+        # group = Group(name=form.name.data, description=form.description.data, password=form.password.data,admin_id=current_user.id)
+
+        _group.name = form.name.data
+        _group.description = form.description.data
+        _group.password = form.password.data
+        # add the admin as a simple user in the group
+        # _username_final = _group.name + '_' + current_user.username
+
+        # user = User(username=_username_final,role="admin",group = _group)
+
+        db.session.commit()
+        flash("Congratulations, you have add a new group!", "info")
+        return redirect(url_for("dashboard_admin"))
+    form.name.data = _group.name
+    form.description.data = _group.description
+
+    return render_template("edit_group.html",group=_group, form=form)
+
+@app.route('/dashboard_admin/deleteGroup/<int:groupId>')
+def deleteGroup(groupId):
+    _group = Group.query.get(groupId)
+    _users = User.query.filter_by(group_id=groupId).all()
+    db.session.delete(_group)
+    for user in _users:
+        db.session.delete(user)
+    db.session.commit()
+    return redirect(url_for("dashboard_admin"))
 
 @app.route('/logout_admin', methods=["GET", "POST"])
 def logout_admin():
