@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Page </title>
+  <style>
+    /* Style for the table */
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      /* Style for table cells */
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+      }
+  </style>
+</head>
+<body>
+<a href="/dashboard_admin/addGroup/">Creer un nouveau groupe</a>
+
+<hr>
+<a href="/logout_admin">Se déconnecter</a>
+<hr>
+<h1 style="justify-content: center">Gestionnaire de groupe / admin : {{ admin_name }}</h1>
+<table>
+  <thead>
+    <tr>
+      <th>Nom</th>
+      <th>Description</th>
+      <th>Nombre de membres</th>
+      <th>Modifier</th>
+      <th>Supprimer</th>
+
+    </tr>
+  </thead>
+  <tbody>
+    {% for group, len in groups.items() %}
+      <tr>
+        <td>{{group.name}}</td>
+        <td>{{ group.description }}</td>
+        <td>{{ len }}</td>
+        <td>
+            <a>Modifier</a>
+        </td>
+        <td>
+            <a>Supprimer</a>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+
+</body>
+</html>

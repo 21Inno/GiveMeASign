@@ -1,8 +1,7 @@
 from . import app
 from . import db
 
-
-from flask import Flask, redirect, jsonify, request, Response, render_template, url_for, flash,send_file
+from flask import Flask, redirect, jsonify, request, Response, render_template, url_for, flash, send_file
 from flask_cors import CORS
 import requests
 import json
@@ -11,9 +10,8 @@ from werkzeug.utils import secure_filename
 import fnmatch
 import spacy
 import fr_core_news_sm
-# from init import app
-
-from .models import User, Group, UserHistory, Sign, sign_to_dict, SignProposition, group_Public, anonyme_user
+from .forms import RegisterAdminForm, LoginAdminForm, GroupeForm
+from .models import User, Group, UserHistory, Sign, sign_to_dict, SignProposition, group_Public, anonyme_user, Admin
 from flask_login import login_required, login_user, logout_user, current_user
 
 from .utils import *
@@ -28,7 +26,9 @@ CORS(app, resources=r'/*')
 
 memo_current_user = {current_user: ["Public", "ano"]}
 
-
+@app.route("/", methods=["GET", "POST"])
+def index():
+    return render_template("index.html")
 @app.route("/translate", methods=["GET", "POST"])
 def translate():
     """
@@ -130,12 +130,13 @@ def translate():
     # for lem in lemme input :
     print(lemme_input)
     filters = [SignProposition.gloss.like(f'%{word}%') for word in lemme_input]
-    print("filter : ",filters)
+    print("filter : ", filters)
 
     good_sign_proposition = []
 
     if len(filters) != 0:
-        proposition_object = SignProposition.query.filter(db.and_(*filters,SignProposition.group_name == _current_group)).all()
+        proposition_object = SignProposition.query.filter(
+            db.and_(*filters, SignProposition.group_name == _current_group)).all()
         for prop in proposition_object:
             good_sign_proposition.append((prop.gloss, prop.url, prop.keywords, prop.author_name, str(prop.group_name)))
 
@@ -236,7 +237,7 @@ def upload(mot):
     return render_template("record.html", mot=mot, group=current_group)
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/expert_main', methods=['GET', 'POST'])
 def expert_main():
     if current_user.is_authenticated:
         current_group = current_user.group.name
@@ -279,12 +280,19 @@ def proposition_videos(sub):
 # Login-------------------------------------------------------------------------
 @app.route('/login', methods=["GET", "POST"])
 def login():
+    if current_user.is_authenticated:
+        if current_user.role == "admin":
+            # si l'utilisateur connecté est un admin, on le déconnecte pour
+            # permettre la connection d'un user normal
+            logout_user()
+            #return redirect(url_for("login_admin"))
+        else:
+            return redirect(url_for("dashboard"))
     if request.method != 'GET':
         _group = request.form['group-name']
         _username = request.form['username']
         _password = request.form['password']
         group = Group.query.filter_by(name=_group).first()
-        user = User.query.filter_by(username=_username).first()
 
         print(_group, _username, _password)
 
@@ -296,11 +304,18 @@ def login():
             print("bad pwd")
             return redirect(url_for("login"))
 
+        _complete_username = group.name + '_' + _username
+        user = User.query.filter_by(username=_complete_username).first()
+
         if user is None:
-            user = User(username=_username, role='normal', group=group)
+            user = Admin.query.filter_by(username=_username).first()
+            if user is None:
+                _username_final = group.name+ '_' + _username
+                user = User(username= _username_final,role="admin", group=group)
         else:
             if user.group_id != group.id:
-                user = User(username=_username, role='normal', group=group)
+                _username_final = group.name+ '_' + _username
+                user = User(username=_username,role="normal", group=group)
 
         # Add the user in the dict of users
         db.session.add(user)
@@ -368,10 +383,130 @@ def logout():
     memo_current_user.popitem()
     return jsonify({"login_state": "false"})
 
+#-------------Admin features---------------------
+@app.route('/register_admin/', methods=["GET", "POST"])
+def register_admin():
+    # check is current user already authenticated
+    if current_user.is_authenticated:
+        if current_user.role == "admin":
+            return redirect(url_for("dashboard_admin"))
+        else:
+            return redirect(url_for("dashboard"))
 
+    # Form data
+
+    form = RegisterAdminForm()
+    if form.validate_on_submit():
+        # Add the user in the dict of users
+        user = Admin(username=form.username.data,role="admin", email=form.email.data, password=form.password.data)
+
+        db.session.add(user)
+        db.session.commit()
+        flash("Congratulations, you are now a registered user!", "info")
+
+        return redirect(url_for("login_admin"))
+
+    return render_template("register_admin.html", form=form)
+
+
+@app.route("/login_admin/", methods=["GET", "POST"])
+def login_admin():
+    # check is current user already authenticated
+    if current_user.is_authenticated:
+        if current_user.role == "admin":
+            return redirect(url_for("dashboard_admin"))
+        else:
+            # si l'utilisateur connecté est un user normal, on le déconnecte pour
+            # permettre la connection de l'admin
+            logout_user()
+            #return redirect(url_for("dashboard"))
+    # Form data
+    form = LoginAdminForm()
+    if form.validate_on_submit():
+
+        admin = Admin.query.filter_by(username=form.username.data).first()
+        if admin is None:
+            flash("You are not registered yet.", "log_warning")
+            return redirect(url_for("login_admin"))
+
+        if not admin.check_password(form.password.data):
+            flash("Username or password incorrect.", "log_warning")
+            return redirect(url_for("login_admin"))
+
+        # Ok for log in
+        login_user(admin)
+        flash("Logged in successfully.", "info")
+
+        return redirect(url_for("dashboard_admin"))
+
+    # GET
+    return render_template("login_admin.html", form=form)
+
+
+@app.route('/dashboard_admin/')
+def dashboard_admin():
+    if not current_user.is_authenticated:
+        #if current_user.role == "admin":
+        return redirect(url_for("login_admin"))
+        #else:
+        #return redirect(url_for("login"))
+    #get the groups create by the current admin
+    if current_user.role == "admin":
+        admin_current = current_user
+    else:
+        return redirect(url_for("login_admin"))
+    _groups = admin_current.groups
+    dico_group ={}
+    if len(_groups) == 0:
+        return render_template("dashboard_adminEmpty.html")
+    for group in _groups:
+        dico_group[group] = len(group.users)
+    return render_template("dashboard_admin.html",groups=dico_group,admin_name=admin_current.username)
+
+
+
+@app.route("/dashboard_admin/addGroup/", methods=["GET", "POST"])
+def adminAddGroup():
+    if not current_user.is_authenticated:
+        #if current_user.role == "admin":
+        return redirect(url_for("login_admin"))
+        #else:
+        #return redirect(url_for("login"))
+    if current_user.role != "admin":
+        return redirect(url_for("dashboard"))
+
+    # Form data
+    form = GroupeForm()
+    if form.validate_on_submit():
+        # create the group
+        group = Group(name=form.name.data, description=form.description.data, password=form.password.data,admin_id=current_user.id)
+        # add the admin as a simple user in the group
+        _username_final = group.name + '_' + current_user.username
+
+        user = User(username=_username_final,role="admin",group=group)
+        db.session.add(group)
+        db.session.add(user)
+
+        db.session.commit()
+        flash("Congratulations, you have add a new group!", "info")
+        return redirect(url_for("dashboard_admin"))
+
+    return render_template("add_group.html", form=form)
+
+@app.route('/logout_admin', methods=["GET", "POST"])
+def logout_admin():
+    logout_user()
+    #memo_current_user.popitem()
+    return redirect(url_for("index"))
+
+# -------------------END admin-------------------------------
 @app.route('/dashboard')
-@login_required
 def dashboard():
+    if not current_user.is_authenticated:
+        #if current_user.role == "admin":
+        return redirect(url_for("login"))
+    if current_user.role == "admin":
+        return redirect(url_for("dashboard_admin"))
     my_history = []
     for hist in current_user.history:
         sign = Sign.query.filter_by(id=hist.sign_id).first()
@@ -402,11 +537,12 @@ def delete(identifiant):
 
 
 @app.route('/gifsAPI/<current_group>/<mot>/<filename>')
-def get_gif(filename,mot,current_group):
+def get_gif(filename, mot, current_group):
     directory_gif2 = os.path.abspath(
         os.path.dirname(__file__)) + "\\static\\gifs\\" + current_group + "\\gifs_" + mot
     file_path = os.path.join(directory_gif2, filename)
     return send_file(file_path, mimetype='image/gif')
+
 
 if __name__ == "__main__":
     app.run(debug=True)

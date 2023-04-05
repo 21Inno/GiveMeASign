@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+</head>
+<body>
+    <div class="text-center">
+    <h1 class="text-primary text-center">Register</h1>
+
+    <form method="POST" action="/register_admin/" novalidate>
+        <!-- Objets firstname, lastname, username, date, password, confirmpassword, submit défini dans forms.py -->
+        <div class="col-md-6 offset-md-3">
+            {{ form.csrf_token }}
+            <!-- {{ form.hidden_tag() }} -->
+
+            <div class="row">
+                <div class="col-lg-6">
+                    {{ form.username.label (class="text-primary")}} {{ form.username (class="form-control bg-white text-primary", placeholder="Votre pseudo") }}
+                    <small class="form-text text-danger">
+                        {% if form.username.errors %} {% for message in form.username.errors %}{{ message }}
+                        {% endfor %}{% endif %}
+                    </small><br>
+                </div>
+                <div class="col-lg-6">
+                    {{ form.email.label (class="text-primary")}} {{ form.email (class="form-control bg-white text-primary", placeholder="Votre email") }}
+                    <small class="form-text text-danger">
+                        {% if form.username.errors %} {% for message in form.username.errors %}{{ message }}
+                        {% endfor %}{% endif %}
+                    </small><br>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6">
+                    {{ form.password.label (class="text-primary")}} {{ form.password (class="form-control bg-white text-primary", placeholder="Mot de passe") }}
+                    <small class="form-text text-danger">
+                        {% if form.password.errors %} {% for message in form.password.errors %}
+                        {{ message }}
+                        {% endfor %}{% endif %}
+                    </small><br>
+                </div>
+                <div class="col-lg-6">
+                    {{ form.checkpassword.label (class="text-primary")}} {{ form.checkpassword (class="form-control bg-white text-primary", placeholder="Confirmation du mot de passe") }}
+                    <small class="form-text text-danger">
+                        {% if form.checkpassword.errors %} {% for message in form.checkpassword.errors %}
+                            {{ message }}
+                        {% endfor %}{% endif %}
+                    </small><br>
+                </div>
+            </div>
+            {{ form.submit (class="btn btn-primary") }}<br><a href="/login_admin/">Already registered</a>
+
+        </div>
+    </form>
+</div>
+</body>
+</html>
