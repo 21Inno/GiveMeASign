@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr">
   <head>
-    <title>Nouveau groupe</title>
+    <title>Modification groupe</title>
   </head>
   <body>
-    <h1>Create a Group</h1>
-    <form method="post" action="/dashboard_admin/addGroup/" novalidate>
+    <h1>Modification du Groupe : {{ group.name }}</h1>
+    <form method="post" action="/dashboard_admin/editGroup/{{ group.id }}" novalidate>
         <div class="col-md-6 offset-md-3">
             {{ form.csrf_token }}
             <!-- {{ form.hidden_tag() }} -->

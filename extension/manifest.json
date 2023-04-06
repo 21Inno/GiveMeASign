@@ -1,13 +1,13 @@
 {
   "manifest_version": 3,
 
-  "name": "LSFBtranslate",
+  "name": "GiveMeASign",
   "description": "This extension will provide French to sign language translations",
   "version": "1.0.0",
   "author" : "Babacar Sow, Innocent Ye",
 
   "action": {
-   "default_title" : "LSFBtranslate",
+   "default_title" : "GiveMeASign",
    "default_icon": "/static/img/logo1.png",
    "default_popup": "templates/plugin.html"
   },

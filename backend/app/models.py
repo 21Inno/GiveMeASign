@@ -139,7 +139,7 @@ with app.app_context():
     db.create_all()
 
     # admin
-    admin0 = Admin(email='admin@example.com', username='admin', password='password123')
+    admin0 = Admin(email='admin@example.com', username='admin', password='azerty',role='admin')
 
     # create a new group
     group_StMarie = Group(name="StMarie", password="StMarie", admin=admin0)
