@@ -1,0 +1,99 @@
+.recorder {
+    position: relative;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    color: red;
+    font-size: 1.2em;
+}
+
+svg:not(:root) {
+    display: block;
+}
+
+video {
+    background-color: black;
+    display: block;
+    margin: 6px auto;
+    width: 500px;
+    height: 300px;
+    margin-top: 2px;
+    border: 1px solid black;
+}
+
+.button {
+    cursor: pointer;
+    display: block;
+    width: 160px;
+    border: 1px solid black;
+    font-size: 16px;
+    text-align: center;
+    padding-top: 2px;
+    padding-bottom: 4px;
+    color: white;
+    background-color: darkgreen;
+    text-decoration: none;
+}
+
+
+@keyframes countdown-animation {
+    0% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+#countdown {
+    position: absolute;
+    left: 50%;
+    top: 40%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    font-size: 48px;
+    color: yellow;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation-duration: 3s;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+}
+
+
+.logo a {
+    color: blue;
+    text-decoration: none;
+    transition: all 0.3s ease 0s;
+    font-family: "Times New Roman", Times, serif;
+    font-weight: bold;
+    font-size: 40px;
+    margin-bottom: 0px;
+    margin-top: 0px;
+}
+
+.logo a:hover {
+    color: #0088a9;
+}
+
+.footer {
+    background-color: #24252A;
+    color: #edf0f1;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+}

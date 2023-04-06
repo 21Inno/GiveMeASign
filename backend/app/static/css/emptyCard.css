@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css?family=Playfair+Display');
+@import url('https://fonts.googleapis.com/css?family=Playfair+Display|Source+Sans+Pro');
+
+body {
+    background: #eee;
+    padding: 40px 0px;
+}
+
+.card {
+    width: 400px;
+    margin: 0px auto;
+    background-color: white;
+    box-shadow: 0px 5px 20px #555;
+}
+
+.card a {
+    color: #333;
+    text-decoration: none;
+}
+
+.card:hover .card-image img {
+    width: 105%;
+}
+
+.card-image {
+    height: 200px;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-image img {
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition-property: filter width;
+    transition-duration: 0.3s;
+}
+
+.card-body {
+    text-align: center;
+    padding: 15px 20px;
+    box-sizing: border-box;
+}
+
+.card-exceprt {
+    font-family: 'Playfair Display', serif;
+}
+
+.card-excerpt {
+    color: #777;
+}

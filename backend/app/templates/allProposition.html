@@ -1,42 +1,36 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>ExpertPage</title>
-  <style>
-    /* Style for the table */
-      table {
-        border-collapse: collapse;
-        width: 100%;
-      }
 
-      /* Style for table cells */
-      td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: center;
-      }
-  </style>
+<head>
+   
+  <meta charset="UTF-8">
+  <title>ExpertPage</title>
+  <link rel="stylesheet" href="../static/css/proposition.css">
+
 </head>
+
 <body>
-<h1 style="justify-content: center">Toutes les proposition de signes</h1>
-<table>
-  <thead>
-    <tr>
-      <th>Nouveaux Mots</th>
-      <th>Nombres de proposition</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for subdirectory, num_files in subdirectories.items() %}
+  <h1 style="justify-content: center">Toutes les proposition de signes</h1>
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>Nouveaux Mots</th>
+        <th>Nombres de proposition</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for subdirectory, num_files in subdirectories.items() %}
       <tr>
         <td><a href="http://localhost:5000//proposition/{{subdirectory}}">{{subdirectory}}</a></td>
         <td>{{ num_files }}</td>
       </tr>
-    {% endfor %}
-  </tbody>
-</table>
+      {% endfor %}
+    </tbody>
+  </table>
 
-
+  <div class="footer">
+    <p>&copy; Give Me A Sign</p>
+  </div>
 </body>
+
 </html>
