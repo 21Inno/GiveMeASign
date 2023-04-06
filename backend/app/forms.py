@@ -9,8 +9,9 @@ from .models import User, Admin
 class LoginAdminForm(FlaskForm):
     username = StringField("Username:", validators=[InputRequired(), DataRequired(), Length(min=2, max=20)])
     password = PasswordField("Password:", validators=[InputRequired(), DataRequired(), Length(min=2, max=20)])
-    submit = SubmitField('Login')
+    submit = SubmitField('Submit')
 
+    
 # Form for register
 class RegisterAdminForm(FlaskForm):
     with app.app_context():

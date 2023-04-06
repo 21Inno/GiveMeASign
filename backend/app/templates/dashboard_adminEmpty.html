@@ -1,12 +1,28 @@
-<html>
+<!DOCTYPE html>
+<html lang="fr">
+
 <head>
-
+    <meta charset="UTF-8">
+    <title>ExpertPage</title>
+    <link rel="stylesheet" href="../static/css/emptyCard.css">
 </head>
-<body>
-<div>
-    <span>Pas de groupes pour l'instant</span><br>
-    <a href="/dashboard_admin/addGroup/">Creer un groupe</a>
 
-</div>
+<body>
+    <div class="card">
+        <a href="/dashboard_admin/addGroup/">
+            <div class="card-image">
+                <img src="../static/img/no_group.png" alt="noGroup" />
+            </div>
+
+            <div class="card-body">
+                <div class="card-excerpt">
+                    <p> Bienvenue sur la page de gestion des groupes.</p>
+                    <p>Vous n'avez pas encore de groupe. Cliquez ici pour en créer un. </p>
+                </div>
+
+            </div>
+        </a>
+    </div>
 </body>
+
 </html>

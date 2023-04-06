@@ -430,10 +430,10 @@ def logout():
     memo_current_user.popitem()
     return jsonify({"login_state": "false"})
 
-
 # ---------------------------End user features--------------------
 
 # ---------------------------Admin features---------------------
+
 @app.route('/register_admin/', methods=["GET", "POST"])
 def register_admin():
     # check is current user already authenticated
@@ -456,7 +456,17 @@ def register_admin():
 
         return redirect(url_for("login_admin"))
 
-    return render_template("register_admin.html", form=form)
+    return redirect(url_for("login_register_admin"))
+
+
+@app.route('/login_register/', methods=["GET", "POST"])
+def login_register_admin():
+
+    login_form = LoginAdminForm()
+    register_form = RegisterAdminForm()
+
+
+    return render_template("login_register.html", login_form=login_form, register_form=register_form)
 
 
 @app.route("/login_admin/", methods=["GET", "POST"])
@@ -489,7 +499,7 @@ def login_admin():
         return redirect(url_for("dashboard_admin"))
 
     # GET
-    return render_template("login_admin.html", form=form)
+    return redirect(url_for("login_register_admin"))
 
 
 @app.route('/dashboard_admin/')
