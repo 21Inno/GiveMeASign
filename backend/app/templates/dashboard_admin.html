@@ -1,78 +1,99 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
-    <title>Admin Page </title>
-    <style>
-        /* Style for the table */
-        table {
-            border-collapse: collapse;
-            width: 85%;
-            margin-left : 190px;
-        }
-        /* Style for table cells */
-        td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-
-        /* Style for the navigation bar */
-        .navbar {
-            height: 100%;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background-color: #f2f2f2;
-            overflow: hidden;
-        }
-
-        /* Style for the links in the navigation bar */
-        .navbar a {
-            display: block;
-            color: #333;
-            padding: 8px 16px;
-            text-decoration: none;
-        }
-
-        /* Style for the active link in the navigation bar */
-        .navbar a.active {
-            background-color: #4CAF50;
-            color: white;
-        }
-    </style>
+    <title>ExpertPage</title>
+    <link rel="stylesheet" href="../static/css/dash_admin.css">
 </head>
+
 <body>
-<div class="navbar">
-    <a href="/dashboard_admin/addGroup/">Créer un nouveau groupe</a>
-    <a href="/logout_admin">Se déconnecter</a>
-</div>
-<h1 style="text-align: center">Gestionnaire de groupe / admin : {{ admin_name }}</h1>
-<table>
-    <thead>
-        <tr>
-            <th>Nom</th>
-            <th>Description</th>
-            <th>Nombre de membres</th>
-            <th>Modifier</th>
-            <th>Supprimer</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for group, len in groups.items() %}
-            <tr>
-                <td>{{group.name}}</td>
-                <td>{{ group.description }}</td>
-                <td>{{ len }}</td>
-                <td>
-                    <a href="/dashboard_admin/editGroup/{{ group.id }}">Modifier</a>
-                </td>
-                <td>
-                    <a href="/dashboard_admin/deleteGroup/{{ group.id }}">Supprimer</a>
-                </td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <div class="dashboard-river">
+
+        <div class="dashboard-container">
+
+            <div class="dashboard">
+
+                <div class="ui-row-2">
+
+                    <div class="left-sidebar">
+
+                        <div>
+                            <a href="/dashboard_admin/addGroup/">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="feather feather-log-out">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                                </svg>
+                            </a>
+                        </div>
+
+                        <div>
+                            <a href="/logout_admin">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-person-plus-fill" viewBox="0 0 16 16">
+                                <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+                                <path fill-rule="evenodd"
+                                    d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z" />
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="main-content">
+
+                        <div class="header">
+
+                            <div class="page-display">
+                                <h1>Dashboard admin</h1>
+                                <h2>{{ admin_name }}</h2>
+                            </div>
+                        </div>
+                        <hr>
+
+                        <div class="featured-clay">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Description</th>
+                                        <th>Nombre de membres</th>
+                                        <th>Gestion
+                                        <th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for group, len in groups.items() %}
+                                    <tr>
+                                        <td>{{group.name}}</td>
+                                        <td>{{ group.description }}</td>
+                                        <td>{{ len }}</td>
+                                        <td>
+                                            <a href="/dashboard_admin/editGroup/{{ group.id }}">Modifier</a>
+
+                                            <a href="/dashboard_admin/deleteGroup/{{ group.id }}">Supprimer</a>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+
+
+                        </div>
+
+                        <hr>
+
+                        <div class="featured-users">
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
 </body>
+
 </html>
