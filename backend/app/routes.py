@@ -517,7 +517,7 @@ def dashboard_admin():
     _groups = admin_current.groups
     dico_group = {}
     if len(_groups) == 0:
-        return render_template("dashboard_adminEmpty.html")
+        return render_template("dashboard_adminEmpty.html", admin_name=admin_current.username)
     for group in _groups:
         dico_group[group] = len(group.users)
     return render_template("dashboard_admin.html", groups=dico_group, admin_name=admin_current.username)
@@ -577,7 +577,7 @@ def adminEditGroup(groupId):
     form.name.data = _group.name
     form.description.data = _group.description
 
-    return render_template("edit_group.html", group=_group, form=form)
+    return render_template("edit_group.html", group=_group, form=form, admin_name=current_user.username)
 
 
 @app.route('/dashboard_admin/deleteGroup/<int:groupId>')
