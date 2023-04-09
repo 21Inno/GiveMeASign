@@ -47,10 +47,7 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
     function showLogoutButton(group,username,loginForm) {
-        //document.getElementById("groud_id").innerText = "Groupe : ".concat(group);
-        //document.getElementById("username_id").innerText = username
-        //document.getElementById("groud_id").style.display = "block"
-        //document.getElementById("username_id").style.display = "block"
+
         document.getElementById("toDashboard").style.display = "block"
         const logoutButton = document.createElement("button");
         logoutButton.textContent = "Logout";

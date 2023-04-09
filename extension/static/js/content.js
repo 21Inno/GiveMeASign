@@ -78,11 +78,11 @@ function createModal(mot,gifs,group) {
     //button previous
     const prevButton = document.createElement('button');
     prevButton.classList.add('prev-button');
-    prevButton.innerText = 'Previous';
+    prevButton.innerText = 'Précédent';
     //button next
     const nextButton = document.createElement('button');
     nextButton.classList.add('next-button');
-    nextButton.innerText = 'Next';
+    nextButton.innerText = 'Suivant';
     // add button to open a new tab with examples
     const exampleButton = document.createElement('a');
     exampleButton.classList.add('example-button');
@@ -139,8 +139,8 @@ function createModal(mot,gifs,group) {
 
     // Set initial GIF image source
     gifImage.src = gifs[currentGifIndex][1];
-    glossName.innerHTML = gifs[currentGifIndex][0];
-    keywords.innerHTML = gifs[currentGifIndex][2];
+    glossName.innerHTML = "Gloss : ".concat(gifs[currentGifIndex][0]);
+    keywords.innerHTML = "Mots-clés : ".concat(gifs[currentGifIndex][2]);
     source.innerHTML = "Source : ".concat(gifs[currentGifIndex][4]);
     author.innerHTML = "Auteur : ".concat(gifs[currentGifIndex][3]);
     const br = document.createElement('br');
