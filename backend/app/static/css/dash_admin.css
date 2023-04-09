@@ -70,7 +70,7 @@ body {
   align-items: center;
   justify-content: center;
   width: 95%;
-  height: 90%;
+  height: 75%;
   background: white;
   box-shadow: 0 20px 40px 0 SeaGreen, inset 0px -10px 17px 1px MediumSeaGreen;
   overflow: hidden;
@@ -238,30 +238,20 @@ body {
   flex-wrap: wrap;
   width: 100%;
   height: auto;
-  margin-bottom: 35px;
+  margin-bottom: 60px;
   z-index: 2;
 }
 
-.featured-clay > div {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  width: 32%;
-  height: auto;
-  background: PaleGreen;
-  padding: 30px 20px;
-  margin-top: 25px;
-  border-radius: 20px;
-  box-shadow: 0 10px 20px 0 #3cb37177, inset 0px -7px 12px 1px MediumSeaGreen;
-  transition: all 0.4s ease-in-out;
-}
 
 
 .featured-clay > table {
   border-collapse: collapse;
 }
 
+.featured-clay>table>tbody>tr>td{
+  border: 1px solid;
+  padding: 8px;
+}
 .featured-clay > table > tbody> tr> td > a {
   background: SeaGreen;
   color: white;

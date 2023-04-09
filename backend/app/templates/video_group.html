@@ -1,0 +1,40 @@
+{% extends "full_dashboard_admin.html" %}
+{% block content %}
+
+<body>
+
+    <div class="featured-clay">
+        <table>
+            <thead>
+                <tr>
+                    <thead>
+                        <tr>
+                          <th>Auteur</th>
+                          <th>Gloss</th>
+                          <th>Mots-Clés</th>
+                          <th>Signe</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sign in liste %}
+                <tr>
+                    <td>{{sign.author}}</td>
+                    <td>{{sign.gloss}}</td>
+                    <td>{{sign.keywords}}</td>
+                    <td>
+                        <img src={{sign.url}}>
+                    </td>
+                    <td>
+                        <a href="/dashboard_admin/delete_video/{{sign.id}}">Supprimer</a>
+                    </td>
+                  </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+
+{% endblock %}

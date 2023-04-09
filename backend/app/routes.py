@@ -11,7 +11,7 @@ import fnmatch
 import spacy
 import fr_core_news_sm
 from .forms import RegisterAdminForm, LoginAdminForm, GroupeForm, EditGroupeForm
-from .models import User, Group, UserHistory, Sign, sign_to_dict, SignProposition, group_Public, anonyme_user, Admin
+from .models import User, Group, UserHistory, Sign, sign_to_dict, SignProposition,prop_to_dict, group_Public, anonyme_user, Admin
 from flask_login import login_required, login_user, logout_user, current_user
 from .utils import *
 from datetime import datetime
@@ -590,6 +590,46 @@ def deleteGroup(groupId):
     db.session.commit()
     return redirect(url_for("dashboard_admin"))
 
+
+@app.route('/dashboard_admin/videoGroup/<name>/')
+def show_groupVideos(name):
+
+    if not current_user.is_authenticated:
+        # if current_user.role == "admin":
+        return redirect(url_for("login_admin"))
+        # else:
+        # return redirect(url_for("login"))
+    if current_user.role != "admin":
+        return redirect(url_for("dashboard"))
+    
+    _propositions = SignProposition.query.filter_by(group_name=name).all()
+    liste=[]
+    for prop in _propositions:
+        liste.append(prop_to_dict(prop))
+    print(liste)
+    return render_template("video_group.html", liste=liste, admin_name=current_user.username)
+
+# Route for deleting a movie from my list
+@app.route("/dashboard_admin/delete_video/<int:identifiant>", methods=["GET"])
+def delete_video(identifiant):
+    if not current_user.is_authenticated:
+        # if current_user.role == "admin":
+        return redirect(url_for("login_admin"))
+        # else:
+        # return redirect(url_for("login"))
+    if current_user.role != "admin":
+        return redirect(url_for("dashboard"))
+    
+    _sign = Sign.query.get(identifiant)
+    _video = SignProposition.query.filter_by(id=identifiant).first()
+
+    # Check if the current_user has the movie in my list
+    if _video is not None:
+        db.session.delete(_video)
+        db.session.delete(_sign)
+        db.session.commit()
+
+    return redirect(url_for("dashboard_admin"))
 
 @app.route('/logout_admin', methods=["GET", "POST"])
 def logout_admin():

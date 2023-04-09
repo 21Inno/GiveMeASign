@@ -15,7 +15,7 @@
             <tbody>
                 {% for group, len in groups.items() %}
                 <tr>
-                    <td>{{group.name}}</td>
+                    <td> <a href="/dashboard_admin/videoGroup/{{ group.name }}">{{group.name}}</a></td>
                     <td>{{ group.description }}</td>
                     <td>{{ len }}</td>
                     <td>
