@@ -14,8 +14,19 @@ def sign_to_dict(sign):
     sign_dict['keywords'] = sign.keywords
     sign_dict['url'] = sign.url
     sign_dict['datetime'] = sign.datetime.strftime('%Y-%m-%d %H:%M:%S')
+    sign_dict['author'] = sign.author_name
+
     return sign_dict
 
+def prop_to_dict(sign):
+    prop_dict = {}
+    prop_dict['id'] = sign.id
+    prop_dict['gloss'] = sign.gloss
+    prop_dict['keywords'] = sign.keywords
+    prop_dict['url'] = sign.url
+    prop_dict['author'] = sign.author_name
+
+    return prop_dict
 
 """
 class User(UserMixin, db.Model):
@@ -132,6 +143,16 @@ class SignProposition(db.Model):
 
     def __str__(self):
         return f"Sign {self.id}: {self.gloss}, {self.keywords} "
+
+
+    def proposition_dico(id):
+        prop_dict = {}
+        prop_dict['id'] = id.id
+        prop_dict['gloss'] = id.gloss
+        prop_dict['url'] = id.url
+        prop_dict['datetime'] = id.datetime.strftime('%Y-%m-%d %H:%M:%S')
+        prop_dict['author'] = id.author_name 
+        return prop_dict
 
 
 with app.app_context():

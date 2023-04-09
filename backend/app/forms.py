@@ -30,10 +30,9 @@ class GroupeForm(FlaskForm):
     description = StringField("Description :", widget=TextArea())
     password = PasswordField("Mot de passe:", validators=[InputRequired(), DataRequired(), Length(min=2, max=20,message="Between 2 and 20 characters"),EqualTo("checkpassword", message="Passwords must match")])
     checkpassword = PasswordField("Confirme Mot de passe:", validators=[InputRequired(), DataRequired(), Length(min=2, max=20)])
-    submit = SubmitField('Submit')
+    
 class EditGroupeForm(FlaskForm):
     name = StringField("Nom du groupe:", validators=[InputRequired(), Length(min=2, max=20, message="Between 2 and 20 characters")])
     description = StringField("Description :", widget=TextArea())
     password = PasswordField("Mot de passe:", validators=[InputRequired(), DataRequired(), Length(min=2, max=20,message="Between 2 and 20 characters"),EqualTo("checkpassword", message="Passwords must match")])
     checkpassword = PasswordField("Confirme Mot de passe:", validators=[InputRequired(), DataRequired(), Length(min=2, max=20)])
-    submit = SubmitField('Submit')

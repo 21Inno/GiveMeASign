@@ -1,43 +1,47 @@
-<!DOCTYPE html>
-<html lang="fr">
-  <head>
-    <title>Modification groupe</title>
-  </head>
-  <body>
-    <h1>Modification du Groupe : {{ group.name }}</h1>
-    <form method="post" action="/dashboard_admin/editGroup/{{ group.id }}" novalidate>
-        <div class="col-md-6 offset-md-3">
-            {{ form.csrf_token }}
-            <!-- {{ form.hidden_tag() }} -->
-            {{ form.name.label (class="text-primary")}} {{ form.name (class="form-control bg-white text-primary", placeholder="Votre pseudo") }}<br>
-            {% if form.name.errors %}
+{% extends "full_dashboard_admin.html" %}
+{% block content %}
+
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/group.css') }}">
+</head>
+
+<body>
+    <div class="main">
+        <input type="checkbox" id="chk" aria-hidden="true">
+        <div class="edit">
+
+            <form method="post" action="/dashboard_admin/editGroup/{{ group.id }}" novalidate>
+                <label for="chk" aria-hidden="true"> Nom du Groupe : {{ group.name }} </label>
+                {{ form.csrf_token }}
+                <!-- {{ form.hidden_tag() }} -->
+                {{ form.name (placeholder="Votre pseudo") }}
+                {% if form.name.errors %}
                 {% for message in form.name.errors %}
-                    <small class="form-text text-danger">{{ message }}</small>
+                <small class="form-text text-danger">{{ message }}</small>
                 {% endfor %}
-            {% endif %} <br>
-            {{ form.description.label (class="text-primary")}} {{ form.description (class="form-control bg-white text-primary", placeholder="") }}<br>
-            {% if form.description.errors %}
+                {% endif %}
+                {{ form.description (placeholder="") }}
+                {% if form.description.errors %}
                 {% for message in form.description.errors %}
-                    <small class="form-text text-danger">{{ message }}</small>
+                <small class="form-text text-danger">{{ message }}</small>
                 {% endfor %}
-            {% endif %} <br>
-            {{ form.password.label (class="text-primary")}} {{ form.password (class="form-control bg-white text-primary", placeholder="Mot de passe") }}<br>
-            {% if form.password.errors %}
+                {% endif %}
+                {{ form.password (placeholder="Mot de passe") }}
+                {% if form.password.errors %}
                 {% for message in form.password.errors %}
-                    <small class="form-text text-info">{{ message }}</small>
+                <small class="form-text text-info">{{ message }}</small>
                 {% endfor %}
-            {% endif %}<br>
-            {{ form.checkpassword.label (class="text-primary")}} {{ form.checkpassword (class="form-control bg-white text-primary", placeholder=" confirme Mot de passe") }}<br>
-            {% if form.checkpassword.errors %}
+                {% endif %}
+                {{ form.checkpassword (placeholder=" confirme Mot de passe") }}
+                {% if form.checkpassword.errors %}
                 {% for message in form.checkpassword.errors %}
-                    <small class="form-text text-info">{{ message }}</small>
+                <small class="form-text text-info">{{ message }}</small>
                 {% endfor %}
-            {% endif %}<br>
-            {{ form.submit (class="btn btn-primary") }}
-
+                {% endif %}
+                <button type="submit"> Modifier</button>
+            </form>
         </div>
-    </form>
-    <hr>
+    </div>
+</body>
 
-  </body>
-</html>
+{% endblock  %}
