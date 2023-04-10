@@ -295,8 +295,8 @@ def login():
         if current_user.role == "admin":
             # si l'utilisateur connecté est un admin, on le déconnecte pour
             # permettre la connection d'un user normal
-            logout_user()
-            # return redirect(url_for("login_admin"))
+            #logout_user()
+            return redirect(url_for("dashboard_admin"))
         else:
             return redirect(url_for("dashboard"))
     if request.method != 'GET':
@@ -321,12 +321,14 @@ def login():
         if user is None:
             user = Admin.query.filter_by(username=_username).first()
             if user is None:
+
                 _username_final = group.name + '_' + _username
-                user = User(username=_username_final, role="admin", group=group)
+                user = User(username=_username_final, role="normal", group=group)
         else:
             if user.group_id != group.id:
+
                 _username_final = group.name + '_' + _username
-                user = User(username=_username, role="normal", group=group)
+                user = User(username=_username_final, role="normal", group=group)
 
         # Add the user in the dict of users
         db.session.add(user)
@@ -388,7 +390,7 @@ def addHistory():
     return jsonify("Ajouté à l'historique")
 
 
-@app.route('/dashboard')
+@app.route('/dashboard/', methods=["GET", "POST"])
 def dashboard():
     if not current_user.is_authenticated:
         # if current_user.role == "admin":

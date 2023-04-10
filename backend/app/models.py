@@ -167,9 +167,9 @@ with app.app_context():
     group_Public = Group(name="Public", password="Public", admin=admin0)
 
     # create a new user and add them to the group
-    new_user = User(username='inno', group=group_StMarie)
-    new_user1 = User(username='baba', group=group_StMarie)
-    anonyme_user = User(username='ano', group=group_Public)
+    new_user = User(username='StMarie_inno',role="normal", group=group_StMarie)
+    new_user1 = User(username='StMarie_baba',role="normal", group=group_StMarie)
+    anonyme_user = User(username='anonyme', group=group_Public)
 
     now = datetime.now()
 
