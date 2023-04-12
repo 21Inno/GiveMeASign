@@ -21,7 +21,9 @@
             <tbody>
                 {% for sign in liste %}
                 <tr>
-                    <td>{{sign.author}}</td>
+                    <td>
+                         <a href="/dashboard_admin/block/{{sign.author}}">{{sign.author}}</a>
+                    </td>
                     <td>{{sign.gloss}}</td>
                     <td>{{sign.keywords}}</td>
                     <td>

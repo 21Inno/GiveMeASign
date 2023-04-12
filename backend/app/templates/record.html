@@ -12,10 +12,23 @@
 
 
 <body>
+    {% if blocked %}
+    {% with messages = get_flashed_messages( with_categories=true, category_filter=['danger'] ) %}
+    {% if messages %}
+    <ul class='flashes'>
+        {% for c, m in messages %}
+        <li class="text-danger"> {{ c }} : {{ m }} </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+    
+
+    {%else %}
     <div class="container">
     </div>
     <h1 class="logo" style="color: black"><a href="/upload/{{mot}}">Enregistrement d'un nouveau signe dans le groupe {{
-        group }}</a> </h1>
+            group }}</a> </h1>
     <h3 id="mot_record" class="badge badge-primary">{{mot}}</h3>
     <br>
     <div class="display-none" id="recorder">
@@ -30,8 +43,9 @@
         <br>
         <br>
     </div>
+    {% endif %}
 
-    
+
     <!-- FOOTER -->
     <div class="footer">
         <p>&copy; Give Me A Sign</p>
