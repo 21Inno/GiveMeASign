@@ -5,6 +5,7 @@ from datetime import datetime
 from flask_login import UserMixin
 from sqlalchemy import ForeignKey, Table, Column
 from sqlalchemy.orm import relationship, backref
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 def sign_to_dict(sign):
@@ -17,6 +18,7 @@ def sign_to_dict(sign):
 
     return sign_dict
 
+
 def prop_to_dict(sign):
     prop_dict = {}
     prop_dict['id'] = sign.id
@@ -26,6 +28,7 @@ def prop_to_dict(sign):
     prop_dict['author'] = sign.author_name
 
     return prop_dict
+
 
 """
 class User(UserMixin, db.Model):
@@ -74,7 +77,9 @@ class Admin(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
     username = db.Column(db.String(64), index=True, unique=True)
-    password = db.Column(db.String(100), nullable=False)
+    password = db.Column(db.String(20))
+    password_hash = db.Column(db.String(100))
+
     groups = db.relationship('Group', backref='admin', lazy=True)
     role = db.Column(db.Enum('admin'), nullable=True)
 
@@ -82,16 +87,17 @@ class Admin(UserMixin, db.Model):
         return "< Group >" + self.name
 
     def set_password(self, password):
-        self.password = password
+        self.password_hash = generate_password_hash(password)
 
-    def check_password(self, password1):
-        return self.password == password1
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 
 class Group(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    password = db.Column(db.String(128))
+    password = db.Column(db.String(20))
+    password_hash = db.Column(db.String(100))
     description = db.Column(db.String(2000), nullable=True)
     admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'), nullable=False)
     users = db.relationship('User', backref='group', lazy=True)
@@ -100,19 +106,18 @@ class Group(db.Model):
         return "< Group >" + self.name
 
     def set_password(self, password):
-        self.password = password
+        self.password_hash = generate_password_hash(password)
 
-    def check_password(self, password1):
-        return self.password == password1
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    role = db.Column(db.Enum('normal','admin'), nullable=True)
+    role = db.Column(db.Enum('normal', 'admin'), nullable=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=False)
     history = relationship('UserHistory', backref='user', lazy=True)
-    blocked = db.Column(db.Boolean, unique=False, nullable=False)
 
 
 class UserHistory(db.Model):
@@ -144,14 +149,13 @@ class SignProposition(db.Model):
     def __str__(self):
         return f"Sign {self.id}: {self.gloss}, {self.keywords} "
 
-
     def proposition_dico(id):
         prop_dict = {}
         prop_dict['id'] = id.id
         prop_dict['gloss'] = id.gloss
         prop_dict['url'] = id.url
         prop_dict['datetime'] = id.datetime.strftime('%Y-%m-%d %H:%M:%S')
-        prop_dict['author'] = id.author_name 
+        prop_dict['author'] = id.author_name
         return prop_dict
 
 
@@ -160,16 +164,17 @@ with app.app_context():
     db.create_all()
 
     # admin
-    admin0 = Admin(email='admin@example.com', username='admin', password='azerty',role='admin')
-
+    admin0 = Admin(email='admin@example.com', username='admin', role='admin')
+    admin0.set_password('azerty')
     # create a new group
-    group_StMarie = Group(name="StMarie", password="StMarie", admin=admin0)
+    group_StMarie = Group(name="StMarie", admin=admin0)
+    group_StMarie.set_password("StMarie")
     group_Public = Group(name="Public", password="Public", admin=admin0)
-
+    group_Public.set_password("Public")
     # create a new user and add them to the group
-    new_user = User(username='StMarie_inno',role="normal", group=group_StMarie, blocked=False)
-    new_user1 = User(username='StMarie_baba',role="normal", group=group_StMarie,blocked=False)
-    anonyme_user = User(username='anonyme', group=group_Public,blocked=False)
+    new_user = User(username='StMarie_inno', role="normal", group=group_StMarie)
+    new_user1 = User(username='StMarie_baba', role="normal", group=group_StMarie)
+    anonyme_user = User(username='anonyme', group=group_Public)
 
     now = datetime.now()
 
@@ -219,7 +224,8 @@ with app.app_context():
     print(new_user.group.name)
     print(new_user.history)
     print(new_user.group.admin_id)
-    print(admin0.id,admin0.username)
+    print(admin0.id, admin0.username)
+
 
 @login_manager.user_loader
 def user_loader(userid):
