@@ -30,61 +30,28 @@ def prop_to_dict(sign):
     return prop_dict
 
 
-"""
-class User(UserMixin, db.Model):
+class Person(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
-    role = db.Column(db.Enum('admin', 'normal'), nullable=True)
-    group_id = db.Column(db.Integer, ForeignKey('group.id'), nullable=True)
-    # groups = relationship('Group', secondary=user_group_association, back_populates='users')
-    history = relationship('UserHistory', backref='user', lazy=True)
+    role = db.Column(db.Enum('admin', 'normal'), nullable=False, default='normal')
+
+    __mapper_args__ = {
+        'polymorphic_on': role,
+    }
 
 
-class Admin(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), index=True, unique=True)
-    email = db.Column(db.String(80), unique=True, nullable=True)
-    password = Column(db.String(50))
-    role = db.Column(db.Enum('admin'), nullable=True)
-    # group_id = db.Column(db.Integer, ForeignKey('group.id'), nullable=True)
-    groups = relationship('Group', secondary=user_group_association, back_populates='users')
-    history = relationship('UserHistory', backref='user', lazy=True)
-
-
-class Group(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), index=True, unique=True)
-    description = db.Column(db.String(2000), nullable=True)
-    password = db.Column(db.String(128))
-    admin_id = Column(Integer, ForeignKey('user.id'))
-    admin = relationship('User', back_populates='admin_of')
-    users = relationship('User', backref='group', lazy=True)
-    id_admin = db.Column(db.Integer, ForeignKey('user.id'))
-
-    def __repr__(self):
-        return "< Group >" + self.name
-
-    def set_password(self, password):
-        self.password = password
-
-    def check_password(self, password1):
-        return self.password == password1
-
-"""
-
-
-class Admin(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+class Admin(Person):
+    id = db.Column(db.Integer, db.ForeignKey('person.id'), primary_key=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
-    username = db.Column(db.String(64), index=True, unique=True)
     password = db.Column(db.String(20))
     password_hash = db.Column(db.String(100))
-
     groups = db.relationship('Group', backref='admin', lazy=True)
-    role = db.Column(db.Enum('admin'), nullable=True)
+    __mapper_args__ = {
+        'polymorphic_identity': 'admin'
+    }
 
     def __repr__(self):
-        return "< Group >" + self.name
+        return "< Admin >" + self.name
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -112,13 +79,14 @@ class Group(db.Model):
         return check_password_hash(self.password_hash, password)
 
 
-class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    role = db.Column(db.Enum('normal', 'admin'), nullable=True)
-    username = db.Column(db.String(100), unique=True, nullable=False)
+class User(Person):
+    id = db.Column(db.Integer, db.ForeignKey('person.id'), primary_key=True)
     group_id = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=False)
     history = relationship('UserHistory', backref='user', lazy=True)
     blocked = db.Column(db.Boolean, unique=False, nullable=False)
+    __mapper_args__ = {
+        'polymorphic_identity': 'normal'
+    }
 
 
 class UserHistory(db.Model):
@@ -151,23 +119,24 @@ class SignProposition(db.Model):
         return f"Sign {self.id}: {self.gloss}, {self.keywords} "
 
 
-
 with app.app_context():
     db.drop_all()
     db.create_all()
 
     # admin
-    admin0 = Admin(email='admin@example.com', username='admin', role='admin')
+    admin0 = Admin(email='admin@example.com', username='StMarie_admin', role='admin')
     admin0.set_password('azerty')
+    admin1 = Admin(email='public@example.com', username='Public_admin', role='admin')
+    admin1.set_password('public')
     # create a new group
     group_StMarie = Group(name="StMarie", admin=admin0)
     group_StMarie.set_password("StMarie")
-    group_Public = Group(name="Public", password="Public", admin=admin0)
+    group_Public = Group(name="Public", password="Public", admin=admin1)
     group_Public.set_password("Public")
     # create a new user and add them to the group
-    new_user = User(username='StMarie_inno', role="normal", group=group_StMarie,blocked=False)
-    new_user1 = User(username='StMarie_baba', role="normal", group=group_StMarie,blocked=False)
-    anonyme_user = User(username='anonyme', group=group_Public,blocked=False)
+    new_user = User(username='StMarie_inno', role="normal", group=group_StMarie, blocked=False)
+    new_user1 = User(username='StMarie_baba', role="normal", group=group_StMarie, blocked=False)
+    anonyme_user = User(username='anonyme', role="normal", group=group_Public, blocked=False)
 
     now = datetime.now()
 
@@ -222,7 +191,7 @@ with app.app_context():
 
 @login_manager.user_loader
 def user_loader(userid):
-    user = Admin.query.get(int(userid))
-    if not user:
-        user = User.query.get(int(userid))
+    user = Person.query.get(int(userid))
+    """if not user:
+        user = User.query.get(int(userid))"""
     return user

@@ -14,7 +14,7 @@
                 <label for="chk" aria-hidden="true"> Nom du Groupe : {{ group.name }} </label>
                 {{ form.csrf_token }}
                 <!-- {{ form.hidden_tag() }} -->
-                {{ form.name (placeholder="Votre pseudo") }}
+                {{ form.name (placeholder="Nouveau nom du groupe") }}
                 {% if form.name.errors %}
                 {% for message in form.name.errors %}
                 <small class="form-text text-danger">{{ message }}</small>

@@ -128,6 +128,8 @@ def translate():
 
     # -------------------------Recherche dico parallele -----------------------------
     lemme_input = lemme
+    if len(lemme_input) == 0:
+        lemme_input = [mot_select]
     # good_sign_proposition = []        # lievre lievre1
     # for lem in lemme input :
     print(lemme_input)
@@ -165,20 +167,24 @@ def upload(mot):
        un messsage de succès apres la reception de la video
        ""    ""    d echec si la reception ne s est pas faite
     """
-    if current_user.is_authenticated:
+    """user = list(memo_current_user)[-1]
+    _current_user_ = User.query.filter_by(username=memo_current_user[user][1]).first()"""
 
-        current_group = current_user.group.name
-        _current_user = current_user.username
-    else:
-        current_group = "Public"
-        _current_user = "ano"
+    current_group = "Public"
+    _current_user = "ano"
+
+    if current_user.is_authenticated  :
+        if current_user.role == "normal":
+            current_group = current_user.group.name
+            _current_user = current_user.username
+
 
     #un user bloqué par un prof ne peut pas uploader de vidéo 
     if current_user.blocked :
         blocked= True
         print("aaaa")
         flash('Vous avez été bloqué par votre professeur', 'info')
-        return(render_template("record.html", mot=mot, group=current_group, blocked=blocked))
+        return render_template("record.html", mot=mot, group=current_group, blocked=blocked)
    
     if request.method == 'POST':
 
@@ -403,9 +409,7 @@ def addHistory():
 @app.route('/dashboard/', methods=["GET", "POST"])
 @login_required
 def dashboard():
-    user = list(memo_current_user)[-1]
-    _current_user = User.query.filter_by(username=memo_current_user[user][1]).first()
-
+    _current_user = current_user
     print(_current_user.username)
     if not _current_user.is_authenticated:
         # if current_user.role == "admin":
