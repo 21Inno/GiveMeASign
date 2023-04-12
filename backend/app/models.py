@@ -118,6 +118,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(100), unique=True, nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=False)
     history = relationship('UserHistory', backref='user', lazy=True)
+    blocked = db.Column(db.Boolean, unique=False, nullable=False)
 
 
 class UserHistory(db.Model):
@@ -149,14 +150,6 @@ class SignProposition(db.Model):
     def __str__(self):
         return f"Sign {self.id}: {self.gloss}, {self.keywords} "
 
-    def proposition_dico(id):
-        prop_dict = {}
-        prop_dict['id'] = id.id
-        prop_dict['gloss'] = id.gloss
-        prop_dict['url'] = id.url
-        prop_dict['datetime'] = id.datetime.strftime('%Y-%m-%d %H:%M:%S')
-        prop_dict['author'] = id.author_name
-        return prop_dict
 
 
 with app.app_context():
@@ -172,9 +165,9 @@ with app.app_context():
     group_Public = Group(name="Public", password="Public", admin=admin0)
     group_Public.set_password("Public")
     # create a new user and add them to the group
-    new_user = User(username='StMarie_inno', role="normal", group=group_StMarie)
-    new_user1 = User(username='StMarie_baba', role="normal", group=group_StMarie)
-    anonyme_user = User(username='anonyme', group=group_Public)
+    new_user = User(username='StMarie_inno', role="normal", group=group_StMarie,blocked=False)
+    new_user1 = User(username='StMarie_baba', role="normal", group=group_StMarie,blocked=False)
+    anonyme_user = User(username='anonyme', group=group_Public,blocked=False)
 
     now = datetime.now()
 

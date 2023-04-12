@@ -172,6 +172,14 @@ def upload(mot):
     else:
         current_group = "Public"
         _current_user = "ano"
+
+    #un user bloqué par un prof ne peut pas uploader de vidéo 
+    if current_user.blocked :
+        blocked= True
+        print("aaaa")
+        flash('Vous avez été bloqué par votre professeur', 'info')
+        return(render_template("record.html", mot=mot, group=current_group, blocked=blocked))
+   
     if request.method == 'POST':
 
         directory = os.path.abspath(os.path.dirname(__file__)) + "/static/videos/" + current_group
@@ -236,7 +244,7 @@ def upload(mot):
         db.session.add(proposition)
         db.session.commit()
         return 'File uploaded successfully'
-    return render_template("record.html", mot=mot, group=current_group)
+    return render_template("record.html", mot=mot, group=current_group, blocked=current_user.blocked)
 
 
 @app.route('/expert_main', methods=['GET', 'POST'])
@@ -334,13 +342,13 @@ def login():
             user = Admin.query.filter_by(username=_username).first()
             if user is None:
                 _username_final = group.name + '_' + _username
-                user = User(username=_username_final, role="normal", group=group)
+                user = User(username=_username_final, role="normal", group=group,blocked=False)
                 db.session.add(user)
                 db.session.commit()
         else:
             if user.group_id != group.id:
                 _username_final = group.name + '_' + _username
-                user = User(username=_username_final, role="normal", group=group)
+                user = User(username=_username_final, role="normal", group=group,blocked=False)
                 db.session.add(user)
                 db.session.commit()
         login_user(user)
@@ -640,6 +648,28 @@ def delete_video(identifiant):
         db.session.commit()
 
     return redirect(url_for("dashboard_admin"))
+
+@app.route("/dashboard_admin/block/<username>/", methods=["GET"])
+def block(username):
+
+    if not current_user.is_authenticated:
+        # if current_user.role == "admin":
+        return redirect(url_for("login_admin"))
+        # else:
+        # return redirect(url_for("login"))
+    if current_user.role != "admin":
+        return redirect(url_for("dashboard"))
+    
+    #get the block user in the DB
+    user = SignProposition.query.filter_by(author_name=username).first()
+    print(user)
+    blocked_user=User.query.filter_by(username=user.author_name).first()
+
+    #change his blocked attribute in the DB
+    blocked_user.blocked = not blocked_user.blocked
+    db.session.commit()
+    return redirect(url_for("dashboard_admin"))
+
 
 
 @app.route('/logout_admin', methods=["GET", "POST"])
