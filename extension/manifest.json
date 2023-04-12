@@ -3,7 +3,7 @@
 
   "name": "GiveMeASign",
   "description": "This extension will provide French to sign language translations",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author" : "Babacar Sow, Innocent Ye",
 
   "action": {
