@@ -172,19 +172,20 @@ def upload(mot):
 
     current_group = "Public"
     _current_user = "ano"
-
+    blocked = False
     if current_user.is_authenticated  :
         if current_user.role == "normal":
             current_group = current_user.group.name
             _current_user = current_user.username
 
 
-    #un user bloqué par un prof ne peut pas uploader de vidéo 
-    if current_user.blocked :
-        blocked= True
-        print("aaaa")
-        flash('Vous avez été bloqué par votre professeur', 'info')
-        return render_template("record.html", mot=mot, group=current_group, blocked=blocked)
+
+        #un user bloqué par un prof ne peut pas uploader de vidéo 
+        if current_user.blocked :
+            blocked= True
+            print("aaaa")
+            flash('Vous avez été bloqué par votre professeur', 'info')
+            return render_template("record.html", mot=mot, group=current_group, blocked=blocked)
    
     if request.method == 'POST':
 
@@ -250,7 +251,7 @@ def upload(mot):
         db.session.add(proposition)
         db.session.commit()
         return 'File uploaded successfully'
-    return render_template("record.html", mot=mot, group=current_group, blocked=current_user.blocked)
+    return render_template("record.html", mot=mot, group=current_group, blocked=blocked)
 
 
 @app.route('/expert_main', methods=['GET', 'POST'])

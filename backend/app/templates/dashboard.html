@@ -8,16 +8,26 @@
     /* Style for the table */
     table {
       border-collapse: collapse;
-      width: 100%;
+      width: 80%;
+      position: absolute;
+      left: 10%;
     }
 
     /* Style for table cells */
     td {
-      border: 1px solid #ddd;
+      border: 2px solid black;
       padding: 8px;
       text-align: center;
     }
 
+    td > img{
+      transition: transform .1s;
+    }
+    td > img:hover{
+      transform: scale(2);
+    }
+
+      
     .search {
       position: relative;
       display: flex;
@@ -29,7 +39,7 @@
     }
 
     .search input {
-      width: 100%;
+      width: 80%;
       height: 50px;
       border-radius: 12px;
       box-shadow: 0 10px 20px 0 #3cb37177, inset 0px -4px 8px 0 SeaGreen;
@@ -39,7 +49,7 @@
 
     .search>svg {
       position: absolute;
-      right: 20px;
+      right: 70px;
       bottom: 38%;
       width: 18px;
       height: auto;
@@ -56,7 +66,7 @@
       flex-direction: row;
       align-items: center;
       justify-content: space-between;
-      width: 100%;
+      width: 90%;
       height: auto;
       padding: 35px 30px 25px 30px;
     }
@@ -166,7 +176,7 @@
         <td>{{sign.gloss}}</td>
         <td>{{sign.keywords}}</td>
         <td>
-          <img src={{sign.url}} width="200" height="200">
+          <img src={{sign.url}} width="300" height="150">
         </td>
         <td>{{sign.datetime}}</td>
         <td>
