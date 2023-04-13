@@ -90,6 +90,76 @@ body {
   overflow-x: hidden;
 }
 
+.ui-row-1 {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: auto;
+  padding: 35px 30px 25px 30px;
+}
+
+.logo-comp {
+  position: relative;
+  left: 12px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: auto;
+  transition: all 0.4s ease-in-out;
+}
+
+.logo-comp:hover {
+  cursor: pointer;
+  transition: all 0.4s ease-in-out;
+}
+
+.logo-comp > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 100px;
+  background: MediumSpringGreen;
+  box-shadow: 0 5px 15px 0 SeaGreen, inset 0px -6px 12px 0px SeaGreen;
+  transition: all 0.4s ease-in-out;
+}
+
+.logo-comp > div > svg {
+  fill: SeaGreen;
+  width: 70%;
+  height: 70%;
+  filter: drop-shadow(1px 1px 0px SeaGreen);
+  transition: all 0.4s ease-in-out;
+}
+
+.logo-comp p {
+  letter-spacing: 3px;
+  font-size: 16pt;
+  margin: 0;
+  margin-left: 12px;
+  padding: 0;
+  color: SeaGreen;
+  transition: all 0.4s ease-in-out;
+}
+
+.logo-comp:hover > p {
+  color: black;
+  transition: all 0.4s ease-in-out;
+}
+
+.logo-comp:hover > div > svg {
+  fill: black;
+  filter: unset;
+  transition: all 0.4s ease-in-out;
+}
+
 .ui-row-2 {
   display: flex;
   flex-direction: row;

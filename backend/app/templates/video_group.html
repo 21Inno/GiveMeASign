@@ -21,13 +21,14 @@
             <tbody>
                 {% for sign in liste %}
                 <tr>
-                    <td>
-                         <a href="/dashboard_admin/block/{{sign.author}}">{{sign.author}}</a>
+                    <td> 
+                        {{sign.author}}
+                         <a href="/dashboard_admin/block/{{sign.author}}">bloquer</a>
                     </td>
                     <td>{{sign.gloss}}</td>
                     <td>{{sign.keywords}}</td>
                     <td>
-                        <img src={{sign.url}}>
+                        <img src={{sign.url}} width="300" height="200">
                     </td>
                     <td>
                         <a href="/dashboard_admin/delete_video/{{sign.id}}">Supprimer</a>

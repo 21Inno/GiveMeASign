@@ -1,0 +1,6 @@
+backend/app/__pycache__/models.cpython-39.pyc
+backend/app/users.db
+venv
+backend/app/static/videos
+backend/app/static/gifs
+env
