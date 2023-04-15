@@ -1,0 +1,35 @@
+{% extends "full_dashboard_admin.html" %}
+{% block content %}
+
+<div class="featured-clay">
+    <table>
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td> {{user.username}} </td>
+                <td>
+                    {% if user.blocked %}
+
+                    <a href="/dashboard_admin/block/{{ user.username }}">Débloquer</a>
+
+                    {% else %}
+                    <div class="cellbutton1">
+                    <a href="/dashboard_admin/block/{{ user.username }}" >Bloquer</a>
+                    </div>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+</body>
+
+{% endblock %}

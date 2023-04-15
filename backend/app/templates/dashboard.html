@@ -20,14 +20,15 @@
       text-align: center;
     }
 
-    td > img{
+    td>img {
       transition: transform .1s;
     }
-    td > img:hover{
-      transform: scale(2);
+
+    td>img:hover {
+      transform: scale(3);
     }
 
-      
+
     .search {
       position: relative;
       display: flex;
@@ -176,7 +177,7 @@
         <td>{{sign.gloss}}</td>
         <td>{{sign.keywords}}</td>
         <td>
-          <img src={{sign.url}} width="300" height="150">
+          <img src={{sign.url}} width="100" height="100">
         </td>
         <td>{{sign.datetime}}</td>
         <td>

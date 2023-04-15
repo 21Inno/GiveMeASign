@@ -8,8 +8,9 @@
                 <tr>
                     <th>Nom</th>
                     <th>Description</th>
-                    <th>Nombre de membres</th>
-                    <th>Gestion<th>
+                    <th colspan="2">Nombre de membres</th>
+                    <th colspan="2">Gestion
+                    <th>
                 </tr>
             </thead>
             <tbody>
@@ -17,11 +18,24 @@
                 <tr>
                     <td> <a href="/dashboard_admin/videoGroup/{{ group.name }}">{{group.name}}</a></td>
                     <td>{{ group.description }}</td>
-                    <td>{{ len }}</td>
                     <td>
-                        <a href="/dashboard_admin/editGroup/{{ group.id }}">Modifier</a>
-
-                        <a href="/dashboard_admin/deleteGroup/{{ group.id }}">Supprimer</a>
+                        <div class="cell1"><b>{{ len }}</b></div>
+                    </td>
+                    <td>
+                        <div class="cellbutton">
+                            <a href="/dashboard_admin/users/{{group.id}}"> Voir membres</a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="cellbutton">
+                            <a href="/dashboard_admin/editGroup/{{ group.id }}"> Modifier </a>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="cellbutton1">
+                            <a href="/dashboard_admin/deleteGroup/{{ group.id }}">Supprimer</a>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

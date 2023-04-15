@@ -3,19 +3,31 @@ from . import db
 
 from flask import Flask, redirect, jsonify, request, Response, render_template, url_for, flash, send_file
 from flask_cors import CORS
+from sqlalchemy import exists
+
+
 import requests
 import json
 import os, binascii
 from werkzeug.utils import secure_filename
+
 import fnmatch
 import spacy
 import fr_core_news_sm
+
 from .forms import RegisterAdminForm, LoginAdminForm, GroupeForm, EditGroupeForm
 from .models import User, Group, UserHistory, Sign, sign_to_dict, SignProposition, prop_to_dict, group_Public, \
-    anonyme_user, Admin
+    anonyme_user, Admin, PWReset
 from flask_login import login_required, login_user, logout_user, current_user
-from .utils import *
-from datetime import datetime
+
+from app.util import utils,keygenerator,smtpConfig
+import uuid
+import pytz
+import yagmail
+from datetime import datetime,timedelta
+from sqlalchemy.exc import IntegrityError
+from werkzeug.security import generate_password_hash
+
 import imageio
 
 dico = {}
@@ -67,12 +79,12 @@ def translate():
     print(mot_select)
     print(phrase)
     # PoS tagging du mot selectionné
-    nature_du_mot = get_pos(mot_select, nlp)
+    nature_du_mot = utils.get_pos(mot_select, nlp)
 
     #
     if nature_du_mot in ['VERB', 'AUX']:
         # mettre tous les verbes et auxillaires à l'infinitif
-        new_phrase = get_infinitif(phrase, nlp)
+        new_phrase = utils.get_infinitif(phrase, nlp)
     else:
         new_phrase = phrase
     # obtenir les formes fléchies ou lemmes du mot
@@ -87,7 +99,7 @@ def translate():
         traduction_ = parse_json
 
         for mot in traduction_:
-            lemme.append(get_infinitif(mot, nlp))
+            lemme.append(utils.get_infinitif(mot, nlp))
 
         # eliminer les doublons
         lemme = list(set(lemme))
@@ -99,7 +111,7 @@ def translate():
     # la liste "lemme" contient maintenant le mot et toutes ses variations possibles
     # recuperer tous les gloss et leurs mots clés
 
-    all_traduction_data, dico_of_gloss_keyword = getKeywords(lemme, api_sign_base)
+    all_traduction_data, dico_of_gloss_keyword = utils.getKeywords(lemme, api_sign_base)
 
     # print(dico_of_gloss_keyword)
 
@@ -643,13 +655,13 @@ def delete_video(identifiant):
     if current_user.role != "admin":
         return redirect(url_for("dashboard"))
 
-    _sign = Sign.query.get(identifiant)
+    #_sign = Sign.query.get(identifiant)
     _video = SignProposition.query.filter_by(id=identifiant).first()
 
     # Check if the current_user has the movie in my list
     if _video is not None:
         db.session.delete(_video)
-        db.session.delete(_sign)
+        #db.session.delete(_sign)
         db.session.commit()
 
     return redirect(url_for("dashboard_admin"))
@@ -666,21 +678,161 @@ def block(username):
         return redirect(url_for("dashboard"))
     
     #get the block user in the DB
-    user = SignProposition.query.filter_by(author_name=username).first()
-    print(user)
-    blocked_user=User.query.filter_by(username=user.author_name).first()
-
+    blocked_user = User.query.filter_by(username=username).first()
     #change his blocked attribute in the DB
     blocked_user.blocked = not blocked_user.blocked
+    users=User.query.all
     db.session.commit()
-    return redirect(url_for("dashboard_admin"))
+    return redirect(url_for("view_user",users_group=blocked_user.group_id))
 
+@app.route("/dashboard_admin/users/<int:users_group>/")
+def view_user(users_group):
+    if not current_user.is_authenticated:
+        # if current_user.role == "admin":
+        return redirect(url_for("login_admin"))
+        # else:
+        # return redirect(url_for("login"))
+    if current_user.role != "admin":
+        return redirect(url_for("dashboard"))
+    liste=[]
+    _users = User.query.filter_by(group_id=users_group).all()
+    for user in _users :
+        #change his blocked attribute in the DB
+        liste.append(user)
+
+    return render_template("users.html", users=liste, admin_name=current_user.username)
 
 
 @app.route('/logout_admin', methods=["GET", "POST"])
 def logout_admin():
     logout_user()
     return redirect(url_for("login_register_admin"))
+
+
+###################
+# Password Forget #
+###################
+
+# Display  forgot password page
+@app.route("/pwresetrq", methods=["GET"])
+def pwresetrq_get():
+    """
+    display a form to enter the email of password recuparation
+    """
+    return render_template('forgotPage.html')
+
+
+# Send a request to change password
+@app.route("/pwresetrq", methods=["POST"])
+def pwresetrq_post():
+    """
+    the view send a request to change password
+    :return: return to login page
+    """
+    if db.session.query(Admin).filter_by(email=request.form["email"]).first():
+
+        user = db.session.query(Admin).filter_by(email=request.form["email"]).one()
+        # check if user already has reset their password, so they will update
+        # the current key instead of generating a separate entry in the table.
+        if db.session.query(PWReset).filter_by(user_id=user.id).first():
+
+            pwalready = db.session.query(PWReset).filter_by(user_id=user.id).first()
+            # if the key hasn't been used yet, just send the same key.
+            if pwalready.has_activated == False:
+
+                pwalready.datetime = datetime.now()
+                key = pwalready.reset_key
+            else:
+
+                key = keygenerator.make_key()
+                pwalready.reset_key = key
+                pwalready.datetime = datetime.now()
+                pwalready.has_activated = False
+        else:
+            key = keygenerator.make_key()
+
+            user_reset = PWReset(reset_key=str(key), user_id=user.id)
+            db.session.add(user_reset)
+        db.session.commit()
+
+        #send the email
+        email = smtpConfig.EMAIL
+        pwd = smtpConfig.PASSWORD
+
+        yag = yagmail.SMTP(user=email, password=pwd)
+        contents = ['Please go to this URL to reset your password:',
+                    request.host + url_for("pwreset_get", id=(str(key)))]
+        yag.send(request.form["email"], 'Reset your password', contents)
+        flash("Hello " + user.username + ", check your email for a link to reset your password.", "success")
+
+        return redirect(url_for("login_register_admin"))
+    else:
+
+        flash("Your email was never registered.", "danger")
+        return redirect(url_for("pwresetrq_get"))
+
+# Display the reset password page
+@app.route("/pwreset/<id>", methods= ["GET"])
+def pwreset_get(id):
+    """
+    Display a form to enter new password
+    :param id: id of password reset link
+    :return:
+    """
+    key = id
+    pwresetkey = db.session.query(PWReset).filter_by(reset_key=id).one()
+    generated_by = datetime.utcnow().replace(tzinfo=pytz.utc) - timedelta(hours=24)
+    #if the pwd has been already change by the URL
+    if pwresetkey.has_activated is True:
+        flash("You already reset your password with the URL you are using." +
+              "If you need to reset your password again, please make a" +
+              " new request here.", "danger")
+
+        return redirect(url_for("pwresetrq_get"))
+    #if the password reset link expired
+    if pwresetkey.datetime.replace(tzinfo=pytz.utc) < generated_by:
+        flash("Your password reset link expired.  Please generate a new one" +
+              " here.", "danger")
+
+        return redirect(url_for("pwresetrq_get"))
+    #Display a form to enter new pasword
+    return render_template('resetPassword.html', id=key)
+
+# Send the new password
+@app.route("/pwreset/<id>", methods=["POST"])
+def pwreset_post(id):
+    """
+    update the user's password
+    :param id: id of password reset link
+    :return: to login page
+    """
+    #check the new password
+    if request.form["password"] != request.form["password2"]:
+        flash("Your password and password verification didn't match.", "danger")
+        return redirect(url_for("pwreset_get", id=id))
+    if len(request.form["password"]) < 1:
+        flash("Your password needs to be at least 1 characters", "danger")
+        return redirect(url_for("pwreset_get", id=id))
+
+    user_reset = db.session.query(PWReset).filter_by(reset_key=id).one()
+    try:
+        #update the password
+        exists(db.session.query(Admin).filter_by(id=user_reset.user_id)
+               .update(
+            {'password': request.form["password"], 'password_hash': generate_password_hash(request.form["password"])}))
+        db.session.commit()
+
+    except IntegrityError:
+        flash("Something went wrong", "danger")
+        db.session.rollback()
+        return redirect(url_for("login_register_admin"))
+
+    user_reset.has_activated = True
+    db.session.commit()
+    flash("Your new password is saved.", "success")
+    return redirect(url_for("home"))
+
+
 
 
 # -------------------END admin-------------------------------

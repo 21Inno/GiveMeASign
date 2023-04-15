@@ -117,6 +117,17 @@ class SignProposition(db.Model):
 
     def __str__(self):
         return f"Sign {self.id}: {self.gloss}, {self.keywords} "
+    
+
+""" Table used to handle Password Reset asked by an Admin. The user receives an email with a link to change his PW """
+class PWReset(db.Model):
+    __tablename__ = "pwreset"
+    id = db.Column(db.Integer, primary_key=True)
+    reset_key = db.Column(db.String(128), unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('admin.id'), nullable=False)
+    datetime = db.Column(db.DateTime(timezone=True), default=datetime.now)
+    user = db.relationship(Admin, lazy='joined')
+    has_activated = db.Column(db.Boolean, default=False)
 
 
 with app.app_context():
