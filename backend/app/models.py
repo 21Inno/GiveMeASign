@@ -26,6 +26,8 @@ def prop_to_dict(sign):
     prop_dict['keywords'] = sign.keywords
     prop_dict['url'] = sign.url
     prop_dict['author'] = sign.author_name
+    prop_dict['group_name'] = sign.group_name
+    prop_dict['certified'] = sign.certified
 
     return prop_dict
 
@@ -51,7 +53,7 @@ class Admin(Person):
     }
 
     def __repr__(self):
-        return "< Admin >" + self.name
+        return "< Admin >" + self.username
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -67,6 +69,8 @@ class Group(db.Model):
     password_hash = db.Column(db.String(100))
     description = db.Column(db.String(2000), nullable=True)
     admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'), nullable=False)
+    # group_prop = relationship('SignProposition', backref='group', lazy=True)
+
     users = db.relationship('User', backref='group', lazy=True)
 
     def __repr__(self):
@@ -83,6 +87,8 @@ class User(Person):
     id = db.Column(db.Integer, db.ForeignKey('person.id'), primary_key=True)
     group_id = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=False)
     history = relationship('UserHistory', backref='user', lazy=True)
+    # user_prop = relationship('SignProposition', backref='user', lazy=True)
+
     blocked = db.Column(db.Boolean, unique=False, nullable=False)
     __mapper_args__ = {
         'polymorphic_identity': 'normal'
@@ -92,16 +98,17 @@ class User(Person):
 class UserHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, ForeignKey('user.id'))
-    sign_id = db.Column(db.Integer, ForeignKey('sign.id'))
+    sign_id = db.Column(db.Integer, ForeignKey('sign_history.id'))
 
 
-class Sign(db.Model):
+class SignHistory(db.Model):
+    __tablename__ = 'sign_history'
     id = db.Column(db.Integer, primary_key=True)
     gloss = db.Column(db.String(128))
     keywords = db.Column(db.String(500))
     url = db.Column(db.String(1000))
     datetime = db.Column(db.DateTime, default=datetime.now)
-    user_history = relationship('UserHistory', backref='sign', lazy=True)
+    user_history = relationship('UserHistory', backref='sign_history', lazy=True)
 
     def __str__(self):
         return f"Sign {self.id}: {self.gloss}, {self.keywords} "
@@ -112,8 +119,9 @@ class SignProposition(db.Model):
     gloss = db.Column(db.String(128))
     keywords = db.Column(db.String(500))
     url = db.Column(db.String(1000))
-    author_name = db.Column(db.String(128))
-    group_name = db.Column(db.String(128))
+    author_name = db.Column(db.String(128))  # db.Column(db.Integer, ForeignKey('user.username'))
+    group_name = db.Column(db.String(128))  # db.Column(db.Integer, ForeignKey('group.name'))
+    certified = db.Column(db.Enum('False', 'True', 'waiting'), nullable=False, default='waiting')
 
     def __str__(self):
         return f"Sign {self.id}: {self.gloss}, {self.keywords} "
@@ -158,25 +166,25 @@ with app.app_context():
     print("date and time =", dt_string)
 
     # create a new sign
-    new_sign = Sign(gloss='MANGER', keywords='manger, alimentation, dessert',
+    new_sign = SignHistory(gloss='MANGER', keywords='manger, alimentation, dessert',
                     url='https://corpus-lsfb.be/img/pictures/signe_dbdb6f59d8edcdc7d51135d3f6f62dd4.gif', datetime=now)
-    new_sign1 = Sign(gloss='DORMIR', keywords='dormir, dormeur, sommeil',
+    new_sign1 = SignHistory(gloss='DORMIR', keywords='dormir, dormeur, sommeil',
                      url='https://corpus-lsfb.be/img/pictures/signe_aba4817ea7264d451f611a084563b910.gif', datetime=now)
-    new_sign2 = Sign(gloss='COURIR', keywords='courir, course',
+    new_sign2 = SignHistory(gloss='COURIR', keywords='courir, course',
                      url='https://corpus-lsfb.be/img/pictures/signe_29457ccb6c819c48e83c53aa4e882c62.gif', datetime=now)
 
     # create a new user history and associate it with the user and the sign
-    new_user_history = UserHistory(user=new_user, sign=new_sign)
-    new_user_history1 = UserHistory(user=new_user, sign=new_sign1)
-    new_user_history2 = UserHistory(user=new_user1, sign=new_sign2)
+    new_user_history = UserHistory(user=new_user, sign_history=new_sign)
+    new_user_history1 = UserHistory(user=new_user, sign_history=new_sign1)
+    new_user_history2 = UserHistory(user=new_user1, sign_history=new_sign2)
 
     # proposition
     proposition = SignProposition(gloss="Lièvres_0", keywords="lièvre, lièvres",
-                                  url="C:/Users/CyrilleAdm/PycharmProjects/GiveMeASign/backend/app/static/gifs/StMarie/videos_Lievres/Lievres_0.gif",
-                                  author_name=new_user.username, group_name=group_StMarie.name)
+                                  url="https://www.gifsanimes.com/data/media/1246/lievre-image-animee-0001.gif",
+                                  author_name=new_user.username, group_name=group_StMarie.name, certified= 'waiting')
     proposition1 = SignProposition(gloss="Lièvres_0", keywords="lièvre, lièvres",
-                                   url="C:/Users/CyrilleAdm/PycharmProjects/GiveMeASign/backend/app/static/gifs/StMarie/videos_Lievres/Lievres_1.gif",
-                                   author_name=anonyme_user.username, group_name=group_Public.name)
+                                   url="https://www.gifsanimes.com/data/media/1246/lievre-image-animee-0012.gif",
+                                   author_name=anonyme_user.username, group_name=group_Public.name, certified= 'waiting')
 
     # add the group, user, sign, and user history to the database
     db.session.add(group_StMarie)

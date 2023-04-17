@@ -5,7 +5,6 @@ from flask import Flask, redirect, jsonify, request, Response, render_template, 
 from flask_cors import CORS
 from sqlalchemy import exists
 
-
 import requests
 import json
 import os, binascii
@@ -16,15 +15,15 @@ import spacy
 import fr_core_news_sm
 
 from .forms import RegisterAdminForm, LoginAdminForm, GroupeForm, EditGroupeForm
-from .models import User, Group, UserHistory, Sign, sign_to_dict, SignProposition, prop_to_dict, group_Public, \
+from .models import User, Group, UserHistory, SignHistory, sign_to_dict, SignProposition, prop_to_dict, group_Public, \
     anonyme_user, Admin, PWReset
 from flask_login import login_required, login_user, logout_user, current_user
 
-from app.util import utils,keygenerator,smtpConfig
+from .util import utils, keygenerator, smtpConfig
 import uuid
 import pytz
 import yagmail
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash
 
@@ -151,11 +150,20 @@ def translate():
     good_sign_proposition = []
 
     if len(filters) != 0:
-        proposition_object = SignProposition.query.filter(
-            db.and_(*filters, SignProposition.group_name == _current_group)).all()
-        for prop in proposition_object:
-            good_sign_proposition.append((prop.gloss, prop.url, prop.keywords, prop.author_name, str(prop.group_name)))
-
+        if _current_group != 'Public':
+            proposition_object = SignProposition.query.filter(
+                db.and_(*filters, db.or_(SignProposition.certified == 'True',
+                                         SignProposition.group_name == _current_group))).all()
+            for prop in proposition_object:
+                good_sign_proposition.append(
+                    (prop.gloss, prop.url, prop.keywords, prop.author_name, str(prop.group_name)))
+        else:
+            print(_current_group)
+            proposition_object = SignProposition.query.filter(
+                db.and_(*filters, SignProposition.certified == 'True')).all()
+            for prop in proposition_object:
+                good_sign_proposition.append(
+                    (prop.gloss, prop.url, prop.keywords, prop.author_name, str(prop.group_name)))
     gifs_ = requete_gif_list_corpus + good_sign_proposition
     print(gifs_)
 
@@ -185,20 +193,20 @@ def upload(mot):
     current_group = "Public"
     _current_user = "ano"
     blocked = False
-    if current_user.is_authenticated  :
+    certified_state = "waiting"
+    if current_user.is_authenticated:
         if current_user.role == "normal":
             current_group = current_user.group.name
             _current_user = current_user.username
+            certified_state = 'False'
 
-
-
-        #un user bloqué par un prof ne peut pas uploader de vidéo 
-        if current_user.blocked :
-            blocked= True
+        # un user bloqué par un prof ne peut pas uploader de vidéo
+        if current_user.blocked:
+            blocked = True
             print("aaaa")
             flash('Vous avez été bloqué par votre professeur', 'info')
             return render_template("record.html", mot=mot, group=current_group, blocked=blocked)
-   
+
     if request.method == 'POST':
 
         directory = os.path.abspath(os.path.dirname(__file__)) + "/static/videos/" + current_group
@@ -259,13 +267,23 @@ def upload(mot):
         # save DB
         proposition = SignProposition(gloss=video_file.filename + "_" + str(count), keywords=keywords,
                                       url=api_gif, group_name=current_group,
-                                      author_name=_current_user)
+                                      author_name=_current_user, certified=certified_state)
         db.session.add(proposition)
         db.session.commit()
         return 'File uploaded successfully'
     return render_template("record.html", mot=mot, group=current_group, blocked=blocked)
 
+@app.route('/gifsAPI/<current_group>/<mot>/<filename>')
+def get_gif(filename, mot, current_group):
+    directory_gif2 = os.path.abspath(
+        os.path.dirname(__file__)) + "\\static\\gifs\\" + current_group + "\\gifs_" + mot
+    file_path = os.path.join(directory_gif2, filename)
+    return send_file(file_path, mimetype='image/gif')
 
+
+# -------------------------End translate views -----------------------
+
+# ------------------------- Expert pages --------------------
 @app.route('/expert_main', methods=['GET', 'POST'])
 def expert_main():
     if current_user.is_authenticated:
@@ -274,7 +292,7 @@ def expert_main():
 
     else:
         current_group = "Public"
-        current_username = "ano"
+        current_username = "anonyme"
 
     main_folder = 'app/static/videos/' + current_group + '/'
 
@@ -306,25 +324,79 @@ def proposition_videos(sub):
     return render_template('video_for_sign.html', videos=videos_, word=sub)
 
 
-@app.route('/gifsAPI/<current_group>/<mot>/<filename>')
-def get_gif(filename, mot, current_group):
-    directory_gif2 = os.path.abspath(
-        os.path.dirname(__file__)) + "\\static\\gifs\\" + current_group + "\\gifs_" + mot
-    file_path = os.path.join(directory_gif2, filename)
-    return send_file(file_path, mimetype='image/gif')
+@app.route("/dashboard_expert/")
+def dashboard_expert():
+    if not current_user.is_authenticated:
+        # if current_user.role == "admin":
+        return redirect(url_for("login_admin"))
+    if current_user.username != 'Public_admin':
+        return redirect(url_for("dashboard_admin"))
+    dico_sign_group = {}
+    _sign_prop = SignProposition.query.filter_by(certified="waiting").all()
+    print(_sign_prop)
+    for _sign in _sign_prop:
+        group = _sign.group_name
+        if group in dico_sign_group:
+            dico_sign_group[group] += 1
+        else:
+            dico_sign_group[group] = 1
+    print(dico_sign_group)
+    return render_template("dashboard_expert.html", groups=dico_sign_group)
 
 
-# -------------------------End translate views-----------------------
+@app.route('/dashboard_expert/signGroup/<name>/')
+def check_sign_expert(name):
+    if not current_user.is_authenticated:
+        # if current_user.role == "admin":
+        return redirect(url_for("login_admin"))
+    _propositions = SignProposition.query.filter_by(group_name=name, certified="waiting").all()
+    liste = []
+    for prop in _propositions:
+        liste.append(prop_to_dict(prop))
+    print(liste)
 
-# --------------------------User features--------------------------------
+    return render_template("sign_expert_check.html", liste=liste, admin_name=current_user.username)
+
+
+@app.route("/send_to_expert/<int:idSign>/")
+def send_to_expert(idSign):
+    _videoProp = SignProposition.query.filter_by(id=idSign).first()
+    if _videoProp is not None:
+        _videoProp.certified = 'waiting'
+
+        db.session.commit()
+    return redirect(url_for("show_groupVideos", name=_videoProp.group_name))
+
+
+@app.route("/dashboard_expert/validate_sign/<int:idSign>/")
+def validate_sign(idSign):
+    if not current_user.is_authenticated:
+        # if current_user.role == "admin":
+        return redirect(url_for("login_admin"))
+    _videoProp = SignProposition.query.filter_by(id=idSign).first()
+    # Check if the current_user has the movie in my list
+
+    if _videoProp is not None:
+        _videoProp.certified = 'True'
+
+        db.session.commit()
+
+    return redirect(url_for("check_sign_expert", name=_videoProp.group_name))
+
+
+# ---------------------- Expert page end --------------------------
+
+
+# -------------------------- User features --------------------------------
 
 @app.route('/islog/')
 def is_log():
     if current_user.is_authenticated:
-        if current_user.role =="normal":
-            return jsonify({"_log":"true","_username":current_user.username,"_role":current_user.role,"_group":current_user.group.name})
+        if current_user.role == "normal":
+            return jsonify({"_log": "true", "_username": current_user.username, "_role": current_user.role,
+                            "_group": current_user.group.name})
         else:
-            return jsonify({"_log":"true","_username":current_user.username,"_role":current_user.role})
+            return jsonify({"_log": "true", "_username": current_user.username, "_role": current_user.role})
     else:
         return jsonify({"_log": "false"})
 
@@ -361,22 +433,23 @@ def login():
             user = Admin.query.filter_by(username=_username).first()
             if user is None:
                 _username_final = group.name + '_' + _username
-                user = User(username=_username_final, role="normal", group=group,blocked=False)
+                user = User(username=_username_final, role="normal", group=group, blocked=False)
                 db.session.add(user)
                 db.session.commit()
         else:
             if user.group_id != group.id:
                 _username_final = group.name + '_' + _username
-                user = User(username=_username_final, role="normal", group=group,blocked=False)
+                user = User(username=_username_final, role="normal", group=group, blocked=False)
                 db.session.add(user)
                 db.session.commit()
         login_user(user)
         memo_current_user[user] = [user.group.name, user.username]
         print('login done')
-        print(current_user.username,current_user.role)
+        print(current_user.username, current_user.role)
         return redirect(url_for('dashboard'))
     print("get login")
     return render_template('login.html')
+
 
 @app.route('/addHistory', methods=["GET", "POST"])
 def addHistory():
@@ -404,10 +477,10 @@ def addHistory():
     # datetime object containing current date and time
     now = datetime.now()
 
-    new_sign = Sign(gloss=_gloss_name, keywords=_keywords1,
-                    url=_url, datetime=now)
-    new_user_history = UserHistory(user=_current_user, sign=new_sign)
-    old_sign = Sign.query.filter_by(gloss=_gloss_name).first()
+    new_sign = SignHistory(gloss=_gloss_name, keywords=_keywords1,
+                           url=_url, datetime=now)
+    new_user_history = UserHistory(user=_current_user, sign_history=new_sign)
+    old_sign = SignHistory.query.filter_by(gloss=_gloss_name).first()
     if old_sign is not None:
         old_historique = UserHistory.query.filter_by(sign_id=old_sign.id, user_id=_current_user.id).first()
         db.session.delete(old_sign)
@@ -433,8 +506,9 @@ def dashboard():
         return redirect(url_for("dashboard_admin"))
     my_history = []
     for hist in _current_user.history:
-        sign = Sign.query.filter_by(id=hist.sign_id).first()
-        my_history.append(sign_to_dict(sign))
+        sign = SignHistory.query.filter_by(id=hist.sign_id).first()
+        if sign is not None:
+            my_history.append(sign_to_dict(sign))
 
     print(my_history)
     my_history1 = my_history[::-1]
@@ -448,7 +522,7 @@ def dashboard():
 @login_required
 def delete(identifiant):
     print(current_user.username)
-    _sign = Sign.query.get(identifiant)
+    _sign = SignHistory.query.get(identifiant)
     _historique = UserHistory.query.filter_by(sign_id=identifiant, user_id=current_user.id).first()
 
     # Check if the current_user has the movie in my list
@@ -548,7 +622,13 @@ def dashboard_admin():
     if current_user.role == "admin":
         admin_current = current_user
     else:
-        return redirect(url_for("login_admin"))
+        return redirect(url_for("dashboard"))
+
+    #  si expert
+    if current_user.username == 'Public_admin':
+        return redirect(url_for("dashboard_expert"))
+
+    # si simple admin
     _groups = admin_current.groups
     dico_group = {}
     if len(_groups) == 0:
@@ -575,7 +655,8 @@ def adminAddGroup():
         # add the admin as a simple user in the group
         _username_final = group.name + '_' + current_user.username
 
-        user = User(username=_username_final, role="normal", group=group)
+        user = User(username=_username_final, role="normal", group=group, blocked=False)
+
         db.session.add(group)
         db.session.add(user)
 
@@ -655,20 +736,25 @@ def delete_video(identifiant):
     if current_user.role != "admin":
         return redirect(url_for("dashboard"))
 
-    #_sign = Sign.query.get(identifiant)
-    _video = SignProposition.query.filter_by(id=identifiant).first()
-
+    # _sign = SignHistory.query.get(identifiant)
+    _videoProp = SignProposition.query.filter_by(id=identifiant).first()
     # Check if the current_user has the movie in my list
-    if _video is not None:
-        db.session.delete(_video)
-        #db.session.delete(_sign)
+
+    if _videoProp is not None:
+        _sign_history = SignHistory.query.filter_by(gloss=_videoProp.gloss, url=_videoProp.url).all()
+        for _sign in _sign_history:
+            db.session.delete(_sign)
+
+        db.session.delete(_videoProp)
+
+        # db.session.delete(_sign)
         db.session.commit()
 
     return redirect(url_for("dashboard_admin"))
 
+
 @app.route("/dashboard_admin/block/<username>/", methods=["GET"])
 def block(username):
-
     if not current_user.is_authenticated:
         # if current_user.role == "admin":
         return redirect(url_for("login_admin"))
@@ -676,14 +762,15 @@ def block(username):
         # return redirect(url_for("login"))
     if current_user.role != "admin":
         return redirect(url_for("dashboard"))
-    
-    #get the block user in the DB
+
+    # get the block user in the DB
     blocked_user = User.query.filter_by(username=username).first()
-    #change his blocked attribute in the DB
+    # change his blocked attribute in the DB
     blocked_user.blocked = not blocked_user.blocked
-    users=User.query.all
+    users = User.query.all
     db.session.commit()
-    return redirect(url_for("view_user",users_group=blocked_user.group_id))
+    return redirect(url_for("view_user", users_group=blocked_user.group_id))
+
 
 @app.route("/dashboard_admin/users/<int:users_group>/")
 def view_user(users_group):
@@ -694,10 +781,10 @@ def view_user(users_group):
         # return redirect(url_for("login"))
     if current_user.role != "admin":
         return redirect(url_for("dashboard"))
-    liste=[]
+    liste = []
     _users = User.query.filter_by(group_id=users_group).all()
-    for user in _users :
-        #change his blocked attribute in the DB
+    for user in _users:
+        # change his blocked attribute in the DB
         liste.append(user)
 
     return render_template("users.html", users=liste, admin_name=current_user.username)
@@ -755,7 +842,7 @@ def pwresetrq_post():
             db.session.add(user_reset)
         db.session.commit()
 
-        #send the email
+        # send the email
         email = smtpConfig.EMAIL
         pwd = smtpConfig.PASSWORD
 
@@ -771,8 +858,9 @@ def pwresetrq_post():
         flash("Your email was never registered.", "danger")
         return redirect(url_for("pwresetrq_get"))
 
+
 # Display the reset password page
-@app.route("/pwreset/<id>", methods= ["GET"])
+@app.route("/pwreset/<id>", methods=["GET"])
 def pwreset_get(id):
     """
     Display a form to enter new password
@@ -782,21 +870,22 @@ def pwreset_get(id):
     key = id
     pwresetkey = db.session.query(PWReset).filter_by(reset_key=id).one()
     generated_by = datetime.utcnow().replace(tzinfo=pytz.utc) - timedelta(hours=24)
-    #if the pwd has been already change by the URL
+    # if the pwd has been already change by the URL
     if pwresetkey.has_activated is True:
         flash("You already reset your password with the URL you are using." +
               "If you need to reset your password again, please make a" +
               " new request here.", "danger")
 
         return redirect(url_for("pwresetrq_get"))
-    #if the password reset link expired
+    # if the password reset link expired
     if pwresetkey.datetime.replace(tzinfo=pytz.utc) < generated_by:
         flash("Your password reset link expired.  Please generate a new one" +
               " here.", "danger")
 
         return redirect(url_for("pwresetrq_get"))
-    #Display a form to enter new pasword
+    # Display a form to enter new pasword
     return render_template('resetPassword.html', id=key)
+
 
 # Send the new password
 @app.route("/pwreset/<id>", methods=["POST"])
@@ -806,7 +895,7 @@ def pwreset_post(id):
     :param id: id of password reset link
     :return: to login page
     """
-    #check the new password
+    # check the new password
     if request.form["password"] != request.form["password2"]:
         flash("Your password and password verification didn't match.", "danger")
         return redirect(url_for("pwreset_get", id=id))
@@ -816,9 +905,9 @@ def pwreset_post(id):
 
     user_reset = db.session.query(PWReset).filter_by(reset_key=id).one()
     try:
-        #update the password
+        # update the password
         exists(db.session.query(Admin).filter_by(id=user_reset.user_id)
-               .update(
+        .update(
             {'password': request.form["password"], 'password_hash': generate_password_hash(request.form["password"])}))
         db.session.commit()
 
@@ -830,9 +919,7 @@ def pwreset_post(id):
     user_reset.has_activated = True
     db.session.commit()
     flash("Your new password is saved.", "success")
-    return redirect(url_for("home"))
-
-
+    return redirect(url_for("login_register_admin"))
 
 
 # -------------------END admin-------------------------------

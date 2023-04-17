@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard_admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dash_admin.css') }}">
+</head>
+
+<body>
+    <div class="dashboard-river">
+
+        <div class="dashboard-container">
+
+            <div class="dashboard">
+
+                <div class="ui-row-2">
+
+                    <div class="left-sidebar">
+
+                        <div>
+                            <a href="/logout_admin">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M502.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L402.7 224 192 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128zM160 96c17.7 0 32-14.3 32-32s-14.3-32-32-32L96 32C43 32 0 75 0 128L0 384c0 53 43 96 96 96l64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0c-17.7 0-32-14.3-32-32l0-256c0-17.7 14.3-32 32-32l64 0z"/></svg>
+                            </a>
+                        </div>
+
+                    </div>
+                    <div class="main-content">
+
+                        <div class="header">
+
+                            <div class="page-display">
+                                <h1>Dashboard Expert</h1>
+                            </div>
+                        </div>
+                        <hr>
+                            <div class="featured-clay">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Description</th>
+                                            <th colspan="2">Signes en attente</th>
+                                            <th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for group, len in groups.items() %}
+                                        <tr>
+                                            <td> <a href="/dashboard_expert/signGroup/{{ group }}/">{{group}}</a></td>
+                                            <td>{{ group.description }}</td>
+                                            <td>
+                                                <div class="cell1"><b>{{ len }}</b></div>
+                                            </td>
+                                            <td>
+                                                <div class="cellbutton">
+                                                    <a href="/dashboard_expert/signGroup/{{ group }}/"> Voir les signes</a>
+                                                </div>
+                                            </td>
+
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+    </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <p>&copy; Give Me A Sign</p>
+    </div>
+</body>
+
+</html>
