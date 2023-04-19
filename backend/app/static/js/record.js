@@ -1,9 +1,7 @@
 let startButton = document.getElementById("record");//start the record
 let stopButton = document.getElementById("stop");//stop the record
 let retryButton = document.getElementById("retry");//mauvais signe ? => recommencer la video
-retryButton.style.visibility="hidden"
-const validateButton = document.createElement('button'); // valider et sauvegarder l enregistrement
-validateButton.innerText = "v"
+let validateButton = document.getElementById("validate"); // valider et sauvegarder l enregistrement
 let preview = document.getElementById("vidBox");
 
 stopButton.disabled = true;
@@ -44,12 +42,12 @@ function startRecording(stream, length) {
 
       //css pour la preview
       recMediaFile.style.position = "absolute"
-      recMediaFile.style.top = "12%"
+      recMediaFile.style.top = "29%"
       recMediaFile.style.left = "34%"
+      recMediaFile.style.zIndex="1"
 
       // Afficher le fichier enregistré
       document.getElementById('recorder').appendChild(recMediaFile);
-      document.getElementById('recorder').appendChild(validateButton);
 
       // Afficher les boutons "retry" et "valider"
       retryButton.disabled = false;
@@ -131,7 +129,7 @@ startButton.addEventListener('click', async () => {
   stopButton.disabled = false;
   retryButton.disabled = true;
   validateButton.disabled = true;
-  retryButton.style.visibility ='hidden'
+  startButton.style.visibility="hidden"
 
 
   // Demander l'accès à la caméra
@@ -163,7 +161,9 @@ stopButton.addEventListener('click', () => {
   validateButton.disabled = false;
   stopRec(preview.srcObject);
   retryButton.style.visibility = "visible"
+  validateButton.style.visibility = "visible"
   preview.style.visibility ="hidden"
+  stopButton.style.visibility="hidden"
 
 });
 
