@@ -1,36 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Login Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../static/css/login_admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500&display=swap" rel="stylesheet">
 </head>
+
 <body>
-    <div class="text-center">
-    <h1 class="text-primary text-center">Login</h1>
 
-    <form method="POST" action="/login_admin/" novalidate>
-        <div class="col-md-6 offset-md-3">
-            {{ form.csrf_token }}
-            <!-- {{ form.hidden_tag() }} -->
-            {{ form.username.label (class="text-primary")}} {{ form.username (class="form-control bg-white text-primary", placeholder="Votre pseudo") }}<br>
-            {% if form.username.errors %}
-                {% for message in form.username.errors %}
-                    <small class="form-text text-danger">{{ message }}</small>
-                {% endfor %}
-            {% endif %} <br>
-            {{ form.password.label (class="text-primary")}} {{ form.password (class="form-control bg-white text-primary", placeholder="Mot de passe") }}<br>
-            {% if form.password.errors %}
-                {% for message in form.password.errors %}
-                    <small class="form-text text-info">{{ message }}</small>
-                {% endfor %}
-            {% endif %}<br>
-            {{ form.submit (class="btn btn-primary") }}<br> <a href="/register_admin">Not registered yet?</a>
-
+    <div class="container">
+        <div class="row d-flex justify-content-center">
+            <div class="col-sm-6">
+                <div class="alert alert-dark" role="alert">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                    <ul class=flashes>
+                        {% for category, message in messages %}
+                        <li class="{{ category }}">{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
         </div>
-    </form>
-</div>
+        <div class="main">
 
+
+            <input type="checkbox" id="chk" aria-hidden="true" checked>
+            <div class="signup">
+                <form method="POST" action="/register_admin/" novalidate name="register_form">
+                    <label for="chk" aria-hidden="true">Sign up</label>
+                    <!-- Objets firstname, lastname, username, date, password, confirmpassword, submit défini dans forms.py -->
+                    {{ register_form.csrf_token }}
+                    {{ register_form.username (placeholder="Votre pseudo") }}
+                    <small class="form-text text-danger">
+                        {% if register_form.username.errors %} {% for message in register_form.username.errors %}{{
+                        message
+                        }}
+                        {% endfor %}{% endif %}
+                    </small>
+                    {{ register_form.email (placeholder="Votre email") }}
+                    <small class="form-text text-danger">
+                        {% if register_form.username.errors %} {% for message in register_form.username.errors %}{{
+                        message
+                        }}
+                        {% endfor %}{% endif %}
+                    </small>
+                    {{ register_form.password (placeholder="Mot de passe") }}
+                    <small class="form-text text-danger">
+                        {% if register_form.password.errors %} {% for message in register_form.password.errors %}
+                        {{ message }}
+                        {% endfor %}{% endif %}
+                    </small>
+                    {{ register_form.checkpassword (placeholder="Confirmation du mot de passe") }}
+                    <small class="form-text text-danger">
+                        {% if register_form.checkpassword.errors %} {% for message in register_form.checkpassword.errors
+                        %}
+                        {{ message }}
+                        {% endfor %}{% endif %}
+                    </small>
+                    <button type="submit">Sign up</button>
+                </form>
+            </div>
+
+            <div class="login">
+
+                <form method="POST" action="/login_admin/" novalidate name="login_form">
+                    <label for="chk" aria-hidden="true">Login</label>
+                    {{ login_form.csrf_token }}
+                    {{ login_form.username (placeholder="Votre pseudo") }}
+                    {% if login_form.username.errors %}
+                    {% for message in login_form.username.errors %}
+                    <small class="form-text text-danger">{{ message }}</small>
+                    {% endfor %}
+                    {% endif %}
+                    {{ login_form.password (placeholder="Mot de passe") }}
+                    {% if login_form.password.errors %}
+                    {% for message in login_form.password.errors %}
+                    <small class="form-text text-info">{{ message }}
+                        {% endfor %}
+                        {% endif %}
+                    </small>
+                    <button type="submit">Login</button>
+                </form>
+            </div>
+        </div>
+        <br>
+        <div class="text-center">
+            <span id="passwordForgot" ><a href="{{ url_for('.pwresetrq_post') }}"> Mot de passe
+                    oublié?</a></span>
+        </div>
+    </div>
 </body>
+
 </html>

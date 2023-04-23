@@ -3,71 +3,81 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Register Admin</title>
-    <link rel="stylesheet" type="text/css" href="../static/css/login_register.css">
+    <title>Login Admin</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../static/css/login_admin.css">
     <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500&display=swap" rel="stylesheet">
 </head>
 
 <body>
-    <div class="main">
-        <input type="checkbox" id="chk" aria-hidden="true">
-        <div class="signup">
-            <form method="POST" action="/register_admin/" novalidate name="register_form">
-                <label for="chk" aria-hidden="true">Sign up</label>
-                <!-- Objets firstname, lastname, username, date, password, confirmpassword, submit défini dans forms.py -->
-                {{ register_form.csrf_token }}
-                {{ register_form.username (placeholder="Votre pseudo") }}
-                <small class="form-text text-danger">
-                    {% if register_form.username.errors %} {% for message in register_form.username.errors %}{{ message
-                    }}
-                    {% endfor %}{% endif %}
-                </small>
-                {{ register_form.email (placeholder="Votre email") }}
-                <small class="form-text text-danger">
-                    {% if register_form.username.errors %} {% for message in register_form.username.errors %}{{ message
-                    }}
-                    {% endfor %}{% endif %}
-                </small>
-                {{ register_form.password (placeholder="Mot de passe") }}
-                <small class="form-text text-danger">
-                    {% if register_form.password.errors %} {% for message in register_form.password.errors %}
-                    {{ message }}
-                    {% endfor %}{% endif %}
-                </small>
-                {{ register_form.checkpassword (placeholder="Confirmation du mot de passe") }}
-                <small class="form-text text-danger">
-                    {% if register_form.checkpassword.errors %} {% for message in register_form.checkpassword.errors %}
-                    {{ message }}
-                    {% endfor %}{% endif %}
-                </small>
-                <button type="submit">Sign up</button>
-            </form>
-        </div>
 
-        <div class="login">
+    <div class="container">
+        <div class="main">
+            <input type="checkbox" id="chk" aria-hidden="true">
+            <div class="signup">
+                <form method="POST" action="/register_admin/" novalidate name="register_form">
+                    <label for="chk" aria-hidden="true">Sign up</label>
+                    <!-- Objets firstname, lastname, username, date, password, confirmpassword, submit défini dans forms.py -->
+                    {{ register_form.csrf_token }}
+                    {{ register_form.username (placeholder="Votre pseudo") }}
+                    <small class="form-text text-danger">
+                        {% if register_form.username.errors %} {% for message in register_form.username.errors %}{{
+                        message
+                        }}
+                        {% endfor %}{% endif %}
+                    </small>
+                    {{ register_form.email (placeholder="Votre email") }}
+                    <small class="form-text text-danger">
+                        {% if register_form.username.errors %} {% for message in register_form.username.errors %}{{
+                        message
+                        }}
+                        {% endfor %}{% endif %}
+                    </small>
+                    {{ register_form.password (placeholder="Mot de passe") }}
+                    <small class="form-text text-danger">
+                        {% if register_form.password.errors %} {% for message in register_form.password.errors %}
+                        {{ message }}
+                        {% endfor %}{% endif %}
+                    </small>
+                    {{ register_form.checkpassword (placeholder="Confirmation du mot de passe") }}
+                    <small class="form-text text-danger">
+                        {% if register_form.checkpassword.errors %} {% for message in register_form.checkpassword.errors
+                        %}
+                        {{ message }}
+                        {% endfor %}{% endif %}
+                    </small>
+                    <button type="submit">Sign up</button>
+                </form>
+            </div>
 
-            <form method="POST" action="/login_admin/" novalidate name="login_form">
-                <label for="chk" aria-hidden="true">Login</label>
-                {{ login_form.csrf_token }}
-                {{ login_form.username (placeholder="Votre pseudo") }}
-                {% if login_form.username.errors %}
-                {% for message in login_form.username.errors %}
-                <small class="form-text text-danger">{{ message }}</small>
-                {% endfor %}
-                {% endif %}
-                {{ login_form.password (placeholder="Mot de passe") }}
-                {% if login_form.password.errors %}
-                {% for message in login_form.password.errors %}
-                <small class="form-text text-info">{{ message }}
+            <div class="login">
+
+                <form method="POST" action="/login_admin/" novalidate name="login_form">
+                    <label for="chk" aria-hidden="true">Login</label>
+                    {{ login_form.csrf_token }}
+                    {{ login_form.username (placeholder="Votre pseudo") }}
+                    {% if login_form.username.errors %}
+                    {% for message in login_form.username.errors %}
+                    <small class="form-text text-danger">{{ message }}</small>
                     {% endfor %}
                     {% endif %}
-                </small>
-                <button type="submit">Login</button>
-            </form>
+                    {{ login_form.password (placeholder="Mot de passe") }}
+                    {% if login_form.password.errors %}
+                    {% for message in login_form.password.errors %}
+                    <small class="form-text text-info">{{ message }}
+                        {% endfor %}
+                        {% endif %}
+                    </small>
+                    <button type="submit">Login</button>
+                </form>
+            </div>
         </div>
-    </div>
-    <div>
-    <span id="passwordForgot" class="text-right"><a href="{{ url_for('.pwresetrq_post') }}"> Mot de passe oublié ?</a></span>
+        <br>
+        <div  class="text-center">
+            <span id="passwordForgot"><a href="{{ url_for('.pwresetrq_post') }}"> Mot de passe oublié?</a></span>
+        </div>
     </div>
 </body>
 

@@ -555,16 +555,15 @@ def register_admin():
             return redirect(url_for("dashboard"))
 
     # Form data
-
-    form = RegisterAdminForm()
-    if form.validate_on_submit():
+    login_form= LoginAdminForm()
+    register_form = RegisterAdminForm()
+    if register_form.validate_on_submit():
         # Add the user in the dict of users
-        user = Admin(username=form.username.data, role="admin", email=form.email.data)
-        user.set_password(form.password.data)
+        user = Admin(username=register_form.username.data, role="admin", email=register_form.email.data)
+        user.set_password(register_form.password.data)
         db.session.add(user)
         db.session.commit()
-        flash("Congratulations, you are now a registered user!", "info")
-
+        flash("Vous êtes bien enregistré", "info")
         return redirect(url_for("login_admin"))
 
     return redirect(url_for("login_register_admin"))
@@ -589,15 +588,16 @@ def login_admin():
             # logout_user()
             redirect(url_for("dashboard"))
     # Form data
-    form = LoginAdminForm()
-    if form.validate_on_submit():
+    register_form=RegisterAdminForm()
+    login_form = LoginAdminForm()
+    if login_form.validate_on_submit():
 
-        admin = Admin.query.filter_by(username=form.username.data).first()
+        admin = Admin.query.filter_by(username=login_form.username.data).first()
         if admin is None:
             flash("You are not registered yet.", "log_warning")
             return redirect(url_for("login_admin"))
 
-        if not admin.check_password(form.password.data):
+        if not admin.check_password(login_form.password.data):
             flash("Username or password incorrect.", "log_warning")
             return redirect(url_for("login_admin"))
 
@@ -608,7 +608,7 @@ def login_admin():
         return redirect(url_for("dashboard_admin"))
 
     # GET
-    return redirect(url_for("login_register_admin"))
+    return render_template("login_admin.html", login_form=login_form, register_form = register_form)
 
 
 @app.route('/dashboard_admin/')
@@ -925,5 +925,6 @@ def pwreset_post(id):
 # -------------------END admin-------------------------------
 
 
-if __name__ == "__main__":
+"""if __name__ == "__main__":
     app.run(debug=True)
+"""

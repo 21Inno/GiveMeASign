@@ -8,19 +8,19 @@ body{
 	font-family: 'Jost', sans-serif;
 	background: MediumSpringGreen;
 }
+.text-center{
+	position:relative;
+	margin: auto;
+}
 .main{
+	position: relative;
 	margin: auto;
 	width: 350px;
-	height: 550px;
+	height: 500px;
 	background: #eee;
 	overflow: hidden;
 	border-radius: 10px;
-	box-shadow: 5px 20px 50px #000;
-}
-
-.text-center{
-	position: relative;
-	margin: auto;
+	box-shadow: 5px 17px 17px #000;
 }
 #chk{
 	display: none;
@@ -73,10 +73,10 @@ button:hover{
 	background: #6d44b8;
 }
 .login{
-	height: 460px;
+	height: 440px;
 	background: #ffffffec;
 	border-radius: 60% / 10%;
-	transform: translateY(-180px);
+	transform: translateY(-170px);
 	transition: .8s ease-in-out;
 }
 .login label{

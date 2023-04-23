@@ -48,7 +48,7 @@ video {
 #countdown {
     position: absolute;
     left: 50%;
-    top: 50%;
+    top: 42%;
     transform: translate(-50%, -50%);
     width: 100px;
     height: 100px;
@@ -189,7 +189,7 @@ video {
 .display-none#recorder>div#record{
     position: absolute;
     z-index: 2;
-    top:45%;
+    top:40%;
     left: 48%;
 }
 .display-none#recorder>div#record:hover{
