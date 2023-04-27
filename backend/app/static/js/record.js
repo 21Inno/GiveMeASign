@@ -175,8 +175,8 @@ retryButton.addEventListener('click', () => {
   validateButton.disabled = true;
   retryButton.style.visibility="hidden"
   preview.style.visibility ="visible"
-
-
+  stopButton.visibility=true;
+  validateButton.visibility=true;
 
   startButton.click();
   startButton.disabled = true;
