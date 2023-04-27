@@ -2,10 +2,10 @@ name: Tests Login
 on:
   push:
     branches:
-      - [test]
+      - [testing]
   pull_request:
     branches:
-      - [test]
+      - [testing]
 
 jobs:
   test:
