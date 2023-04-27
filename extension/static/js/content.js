@@ -87,8 +87,7 @@ function createModal(mot,gifs,group) {
     const exampleButton = document.createElement('a');
     exampleButton.classList.add('example-button');
     exampleButton.innerText = 'Voir exemple(s)';
-    exampleButton.href = 'https://dico.corpus-lsfb.be/plugin?gloss='.concat(glossName.innerText);
-    exampleButton.target = "_blank"
+    exampleButton.target = "_blank";
     
     // add to history button
     const historyButton = document.createElement('button');
@@ -104,9 +103,13 @@ function createModal(mot,gifs,group) {
         keywords.innerHTML = gifs[currentGifIndex][2]
         source.innerHTML = "Source : ".concat(gifs[currentGifIndex][4])
         author.innerHTML = "Auteur : ".concat(gifs[currentGifIndex][3])
+        exampleButton.href = 'https://dico.corpus-lsfb.be/plugin?gloss='.concat(gifs[currentGifIndex][0]);
+
         if (gifs[currentGifIndex][4] !== "CorpusLSFB"){
             exampleButton.style.display = "none"
-        }else{exampleButton.style.display = "block";}
+        }else{
+            exampleButton.style.display = "block";
+}
         if(group === 'Public'){
             historyButton.style.display = "none";
         }else{
@@ -125,9 +128,12 @@ function createModal(mot,gifs,group) {
         keywords.innerHTML = gifs[currentGifIndex][2]
         source.innerHTML = "Source : ".concat(gifs[currentGifIndex][4])
         author.innerHTML = "Auteur : ".concat(gifs[currentGifIndex][3])
+        exampleButton.href = 'https://dico.corpus-lsfb.be/plugin?gloss='.concat(gifs[currentGifIndex][0]);
+
         if (gifs[currentGifIndex][4] !== "CorpusLSFB"){
             exampleButton.style.display = "none"
-        }else{exampleButton.style.display = "block";}
+        }else{exampleButton.style.display = "block";
+}
         if(group === 'Public'){
             historyButton.style.display = "none";
         }else{
@@ -143,6 +149,8 @@ function createModal(mot,gifs,group) {
     keywords.innerHTML = "Mots-clés : ".concat(gifs[currentGifIndex][2]);
     source.innerHTML = "Source : ".concat(gifs[currentGifIndex][4]);
     author.innerHTML = "Auteur : ".concat(gifs[currentGifIndex][3]);
+    exampleButton.href = 'https://dico.corpus-lsfb.be/plugin?gloss='.concat(gifs[currentGifIndex][0]);
+
     const br = document.createElement('br');
     if (gifs[currentGifIndex][4] !== "CorpusLSFB"){
         exampleButton.style.display = "none";
