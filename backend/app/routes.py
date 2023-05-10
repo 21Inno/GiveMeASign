@@ -469,6 +469,7 @@ def addHistory():
     else:
         _keywords1 = _keywords
     _url = json.loads(request.data, strict=False)["url"]
+    _mot_select = json.loads(request.data, strict=False)["selected_word"].lower()
 
     print(_current_group, _current_username)
     print(_current_user)
@@ -477,7 +478,7 @@ def addHistory():
     # datetime object containing current date and time
     now = datetime.now()
 
-    new_sign = SignHistory(gloss=_gloss_name, keywords=_keywords1,
+    new_sign = SignHistory(mot=_mot_select,gloss=_gloss_name, keywords=_keywords1,
                            url=_url, datetime=now)
     new_user_history = UserHistory(user=_current_user, sign_history=new_sign)
     old_sign = SignHistory.query.filter_by(gloss=_gloss_name).first()
@@ -489,7 +490,7 @@ def addHistory():
     db.session.add(new_sign)
     db.session.add(new_user_history)
     db.session.commit()
-    return jsonify("Ajouté à l'historique")
+    return jsonify("Ajouté")
 
 
 @app.route('/dashboard/', methods=["GET", "POST"])

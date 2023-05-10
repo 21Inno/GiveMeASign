@@ -216,9 +216,10 @@
   <table id="history">
     <thead>
       <tr>
-        <th>Gloss</th>
+        <th>Mot</th>
         <th>Mots-Clés</th>
         <th>Signe</th>
+        <th>Gloss</th>
         <th>Date</th>
         <th>Commandes</th>
       </tr>
@@ -226,11 +227,12 @@
     <tbody>
       {% for sign in my_history %}
       <tr>
-        <td>{{sign.gloss}}</td>
+        <td>{{sign.mot}}</td>
         <td>{{sign.keywords}}</td>
         <td>
           <img src={{sign.url}} width="100" height="100">
         </td>
+        <td>{{sign.gloss}}</td>
         <td>{{sign.datetime}}</td>
         <td>
           <a href="/delete_in_history/{{sign.id}}">Remove</a>

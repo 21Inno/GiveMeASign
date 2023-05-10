@@ -206,3 +206,20 @@ video {
 .display-none#recorder>div#stop:hover{
     filter: grayscale(90%);
 }
+
+#notification {
+    position: fixed;
+    bottom: -8rem;
+    left: 42%;
+    color: #ff4754;
+    background: #000;
+    padding: 1.2rem 2.4rem;
+    border-radius: 0.2rem;
+    box-shadow: 7px 8px 14px rgba(0, 0, 0, 0.4);
+    transition: all 0.4s;
+}
+
+#notification.show {
+    bottom: 25rem;
+    left: 42%;
+  }

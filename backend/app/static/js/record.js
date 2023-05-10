@@ -44,7 +44,7 @@ function startRecording(stream, length) {
       recMediaFile.style.position = "absolute"
       recMediaFile.style.top = "29%"
       recMediaFile.style.left = "34%"
-      recMediaFile.style.zIndex="1"
+      recMediaFile.style.zIndex = "1"
 
       // Afficher le fichier enregistré
       document.getElementById('recorder').appendChild(recMediaFile);
@@ -55,29 +55,40 @@ function startRecording(stream, length) {
 
       // Envoyer le fichier enregistré si "valider" est appuyé
       validateButton.addEventListener('click', () => {
-        console.log("ici1")
         const filename = document.getElementById('mot_record').textContent;
         var formData = new FormData();
         let keywordsInputButton = document.getElementById("keywordsInput");
         //let keywordsInput = keywordsInputButton.value()
-        let saveKeywords =document.getElementById("saveKeyword");
+        let saveKeywords = document.getElementById("saveKeyword");
         //let valuesKeywords = "Pas de mots-clés";
         let valuesKeywords = keywordsInputButton.value;
-        if (valuesKeywords === " "){
+        if (valuesKeywords === " ") {
           valuesKeywords = "Pas de mots-clés"
         }
-        /*saveKeywords.addEventListener('click', () => {
-          console.log("ici2")
-          valuesKeywords = keywordsInputButton.value;
-          alert(valuesKeywords)
-        });*/
-        let mot_keywords = {keywords:valuesKeywords}
+
+        let mot_keywords = { keywords: valuesKeywords }
         const blob_mot_keywords = new Blob([JSON.stringify(mot_keywords)], { type: 'application/json' });
 
         formData.append('video', recordedBlob, filename);
         formData.append('keywords', blob_mot_keywords, valuesKeywords);
 
-        if (clicked) { formData = null }
+        validateButton.style.visibility="hidden"
+        recMediaFile.style.visibility="hidden"
+        retryButton.style.visibility="hidden"
+        keywordsInputButton.style.visibility="hidden"
+        
+
+        const notif = document.querySelector('#notification');
+        notif.classList.add("show");
+        setTimeout(() => {
+          window.close();
+        }, 3000);
+
+
+        if (clicked) {
+          formData = null;
+        }
+
         fetch('http://127.0.0.1:5000/upload/' + filename, {
           method: 'POST',
 
@@ -100,36 +111,36 @@ function startRecording(stream, length) {
 }
 
 
-  /*
-  This is a function that starts a countdown timer for 3 seconds before starting
-  the recording. We use it to let people prepare themselves before signing
-  */
+/*
+This is a function that starts a countdown timer for 3 seconds before starting
+the recording. We use it to let people prepare themselves before signing
+*/
 function startTimer() {
   var counter = 3;
   var countdown = $('<span id="countdown">' + (counter === 0 ? '' : counter) + '</span>');
   countdown.appendTo($('.container'));
-  setTimeout(function() {
+  setTimeout(function () {
     countdown.css('animation', 'countdown-animation 3s linear forwards');
-    var interval = setInterval(function() {
+    var interval = setInterval(function () {
       counter--;
       countdown.text(counter === 0 ? '' : counter);
       if (counter === 0) {
         clearInterval(interval);
-        setTimeout(function() {
+        setTimeout(function () {
           countdown.remove();
         }, 1000);
       }
     }, 1000);
   }, 1000);
 }
-  
+
 
 startButton.addEventListener('click', async () => {
 
   stopButton.disabled = false;
   retryButton.disabled = true;
   validateButton.disabled = true;
-  startButton.style.visibility="hidden"
+  startButton.style.visibility = "hidden"
 
 
   // Demander l'accès à la caméra
@@ -143,7 +154,7 @@ startButton.addEventListener('click', async () => {
       preview.srcObject = stream;
       preview.captureStream = preview.captureStream || preview.mozCaptureStream;
       await new Promise((resolve) => (preview.onplaying = resolve));
-      return startRecording(preview.captureStream(),recTime);
+      return startRecording(preview.captureStream(), recTime);
     }
     catch (error) {
       console.error('getUserMedia error:', error);
@@ -162,8 +173,8 @@ stopButton.addEventListener('click', () => {
   stopRec(preview.srcObject);
   retryButton.style.visibility = "visible"
   validateButton.style.visibility = "visible"
-  preview.style.visibility ="hidden"
-  stopButton.style.visibility="hidden"
+  preview.style.visibility = "hidden"
+  stopButton.style.visibility = "hidden"
 
 });
 
@@ -173,10 +184,10 @@ retryButton.addEventListener('click', () => {
   startButton.disabled = false;
   retryButton.disabled = true;
   validateButton.disabled = true;
-  retryButton.style.visibility="hidden"
-  preview.style.visibility ="visible"
-  stopButton.style.visibility="visible";
-  validateButton.style.visibility="hidden";
+  retryButton.style.visibility = "hidden"
+  preview.style.visibility = "visible"
+  stopButton.style.visibility = "visible";
+  validateButton.style.visibility = "hidden";
 
   startButton.click();
   startButton.disabled = true;

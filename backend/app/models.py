@@ -11,6 +11,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 def sign_to_dict(sign):
     sign_dict = {}
     sign_dict['id'] = sign.id
+    sign_dict['mot'] = sign.mot
     sign_dict['gloss'] = sign.gloss
     sign_dict['keywords'] = sign.keywords
     sign_dict['url'] = sign.url
@@ -104,6 +105,7 @@ class UserHistory(db.Model):
 class SignHistory(db.Model):
     __tablename__ = 'sign_history'
     id = db.Column(db.Integer, primary_key=True)
+    mot= db.Column(db.String(128))
     gloss = db.Column(db.String(128))
     keywords = db.Column(db.String(500))
     url = db.Column(db.String(1000))
@@ -166,11 +168,11 @@ with app.app_context():
     print("date and time =", dt_string)
 
     # create a new sign
-    new_sign = SignHistory(gloss='MANGER', keywords='manger, alimentation, dessert',
+    new_sign = SignHistory(mot="alimentation",gloss='MANGER', keywords='manger, alimentation, dessert',
                     url='https://corpus-lsfb.be/img/pictures/signe_dbdb6f59d8edcdc7d51135d3f6f62dd4.gif', datetime=now)
-    new_sign1 = SignHistory(gloss='DORMIR', keywords='dormir, dormeur, sommeil',
+    new_sign1 = SignHistory(mot="sommeil", gloss='DORMIR', keywords='dormir, dormeur, sommeil',
                      url='https://corpus-lsfb.be/img/pictures/signe_aba4817ea7264d451f611a084563b910.gif', datetime=now)
-    new_sign2 = SignHistory(gloss='COURIR', keywords='courir, course',
+    new_sign2 = SignHistory(mot="cours", gloss='COURIR', keywords='courir, course',
                      url='https://corpus-lsfb.be/img/pictures/signe_29457ccb6c819c48e83c53aa4e882c62.gif', datetime=now)
 
     # create a new user history and associate it with the user and the sign
